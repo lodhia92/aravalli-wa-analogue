@@ -93,9 +93,6 @@ def composite(P):
 def main():
     global CI, DR, FIG, H, HERE, IN_THR, MATCH, MIN, NG, NG_ELEMS, NPERM, P, P25, PATH, PROJ, Pt, RES, SEED, _, acn, ar, c, cidx, crow, d, el, f, grp, ic, k, mang, mu_au, mu_in, n, name, ng, ngcm_all, ngsa_all, ordered, p, rho, rng, robust, rows, sand, sd_au, sd_in, sets, tab, thr, use, v, x, y
     HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); PROJ=os.path.dirname(HERE)
-    HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); PROJ=os.path.dirname(HERE)
-    RES=f"{HERE}/results"; DR=f"{RES}/drainage"; FIG=f"{HERE}/figures"
-    RES=f"{HERE}/results"; DR=f"{RES}/drainage"; FIG=f"{HERE}/figures"
     RES=f"{HERE}/results"; DR=f"{RES}/drainage"; FIG=f"{HERE}/figures"
     IN_THR=50.0
     CI=dict(La=.237,Yb=.170,Sm=.148,Eu=.0580,Gd=.199)
@@ -110,16 +107,12 @@ def main():
     for c in ["Th","Sc","Co","La","Eu","Sm","Gd","Yb","Nb","Y","TiO2","P2O5","Zr","Hf","Ce","Nd","Pr","Dy","LAT","LON"]:
         ar[c]=pd.to_numeric(ar[c],errors="coerce")
     ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364
-    ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364
     ar["k"]=ar.LAT.round(4).astype(str)+"_"+ar.LON.round(4).astype(str)
-    sand=india("sandmata"); mang=india("mangalwar")
     sand=india("sandmata"); mang=india("mangalwar")
     NG=paths.NGSA
     with open(NG,encoding="latin-1") as f: H=list(csv.reader(f))[11]
     NG_ELEMS=["Th","Sc","Nb","Y","La","Yb","Co","Eu","Sm","Gd"]+PATH
     cidx={el:findcol(el) for el in NG_ELEMS}; cidx={k:v for k,v in cidx.items() if v is not None}
-    cidx={el:findcol(el) for el in NG_ELEMS}; cidx={k:v for k,v in cidx.items() if v is not None}
-    ordered=sorted(cidx.items(),key=lambda kv:kv[1]); use=[0]+[v for _,v in ordered]
     ordered=sorted(cidx.items(),key=lambda kv:kv[1]); use=[0]+[v for _,v in ordered]
     ng=pd.read_csv(NG,header=None,skiprows=12,usecols=use,encoding="latin-1",low_memory=False)
     ng.columns=["SITEID"]+[k for k,_ in ordered]
@@ -127,8 +120,6 @@ def main():
     ng=ng.groupby("SITEID").median(numeric_only=True)
     P25,ngcm_all,ngsa_all=build_pairs(25.0)
     mu_in,sd_in=zscore_elem(ngcm_all,PATH); mu_au,sd_au=zscore_elem(ngsa_all,PATH)
-    mu_in,sd_in=zscore_elem(ngcm_all,PATH); mu_au,sd_au=zscore_elem(ngsa_all,PATH)
-    ic=ngcm_all.set_index("sid"); acn=ngsa_all.set_index("sid")
     ic=ngcm_all.set_index("sid"); acn=ngsa_all.set_index("sid")
     robust=pd.concat([P25[P25.domain==d].sort_values(["mnn","dist"],ascending=[False,True]).head(10) for d in ["Palaeoproterozoic","Archaean"]])
     print("==== (1) PER-ELEMENT validation on robust-20 ====")

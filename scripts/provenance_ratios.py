@@ -52,12 +52,9 @@ def main():
     global DR, HERE, PROJ, RES, THRESH, _, allr, ar, cols, df, el, f, hc, header, k, mang, ng, nm, ordered, r, rows, sand, sets, summary, usecols, v, yil
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(HERE); RES = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
-    PROJ = os.path.dirname(HERE); RES = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
-    PROJ = os.path.dirname(HERE); RES = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
     THRESH = 50.0  # primary catchment-containment threshold (%)
     ar = pd.read_csv(paths.NGCM_TABLE)
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
-    sand = india_set("sandmata"); mang = india_set("mangalwar")
     sand = india_set("sandmata"); mang = india_set("mangalwar")
     with open(paths.NGSA, encoding="latin-1") as f:
         header = list(csv.reader(f))[11]  # row 12 = column names

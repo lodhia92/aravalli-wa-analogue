@@ -91,11 +91,9 @@ def main():
     global AUS_THR, B, Bc, CI, DR, ELEM, H, HERE, IN_THR, MATCH, NG, NPERM, PATH, PROJ, RES, SEED, _, ac, allp, ar, ar_, c, cidx, da, den, di, el, f, k, m, mang, ng, ngcm_all, ngcm_muSD, ngsa_all, ngsa_muSD, null, ok, ordered, pau_mu, pin_mu, pp, pval, r, ra, rb, rho, rng, rob, sand, use, v, wapp, xi, yi, yiln, zau_ar, zau_pp, zin_ar, zin_pp
     HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ=os.path.dirname(HERE); RES=os.path.join(HERE,"results")
-    PROJ=os.path.dirname(HERE); RES=os.path.join(HERE,"results")
     DR=os.path.join(RES,"drainage")
     NPERM = 100000
     SEED = 20260827
-    IN_THR=50.0; AUS_THR=25.0   # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
     IN_THR=50.0; AUS_THR=25.0   # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
     CI=dict(La=.237,Yb=.170,Sm=.148,Eu=.0580,Gd=.199)
     MATCH=["Th/Sc","La/Sc","Th/Co","EuEu","La/Yb_n","Nb/Y"]
@@ -104,9 +102,7 @@ def main():
     for c in ["Th","Sc","Co","La","Eu","Sm","Gd","Yb","Nb","Y","TiO2","P2O5","Zr","Hf","Ce","Nd","Pr","Dy","LAT","LON"]:
         ar[c]=pd.to_numeric(ar[c],errors="coerce")   # element cols are object (detection-limit strings)
     ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364   # oxide wt% -> element mg/kg
-    ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364   # oxide wt% -> element mg/kg
     ar["k"]=ar.LAT.round(4).astype(str)+"_"+ar.LON.round(4).astype(str)
-    sand=india("sandmata"); mang=india("mangalwar")
     sand=india("sandmata"); mang=india("mangalwar")
     NG=paths.NGSA
     with open(NG,encoding="latin-1") as f: H=list(csv.reader(f))[11]
@@ -125,8 +121,6 @@ def main():
     wapp=aus(os.path.join(DR,"wa_palaeoprot_contained.csv"),"WA_PP")
     yiln=aus(os.path.join(DR,"yilgarn_contained.csv"),"Y+N")
     ngcm_all=pd.concat([sand,mang]); ngsa_all=pd.concat([wapp,yiln])
-    ngcm_all=pd.concat([sand,mang]); ngsa_all=pd.concat([wapp,yiln])
-    _,ngcm_muSD=zlog(ngcm_all); _,ngsa_muSD=zlog(ngsa_all)
     _,ngcm_muSD=zlog(ngcm_all); _,ngsa_muSD=zlog(ngsa_all)
     pp,zin_pp,zau_pp=pair(sand,wapp,"Palaeoproterozoic")
     ar_,zin_ar,zau_ar=pair(mang,yiln,"Archaean")
@@ -146,15 +140,11 @@ def main():
             xi.append(zpath(di,pin_mu)[PATH].mean(axis=1).values[0])
             yi.append(zpath(da,pau_mu)[PATH].mean(axis=1).values[0])
     xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
-    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
-    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
     xi,yi=xi[ok],yi[ok]
     rho=spearman(xi,yi)
     rng=np.random.default_rng(SEED)
     ra=pd.Series(xi).rank().values; rb=pd.Series(yi).rank().values
-    ra=pd.Series(xi).rank().values; rb=pd.Series(yi).rank().values
     B=rb[rng.random((NPERM,len(rb))).argsort(axis=1)]
-    Bc=B-B.mean(1,keepdims=True); ac=ra-ra.mean()
     Bc=B-B.mean(1,keepdims=True); ac=ra-ra.mean()
     den=np.sqrt((Bc**2).sum(1)*(ac**2).sum())
     null=np.abs(np.where(den>0,(Bc@ac)/den,np.nan))

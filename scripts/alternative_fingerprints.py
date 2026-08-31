@@ -28,9 +28,7 @@ def main():
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(os.path.dirname(HERE))
     RES  = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
-    RES  = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
     NG   = paths.NGSA
-    AUS_THR = 25.0; NPERM = 100000
     AUS_THR = 25.0; NPERM = 100000
     CAND = {
      "Xenotime: Dy (as published)": (["Dy"], "Xenotime-Y"),

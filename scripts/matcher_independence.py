@@ -128,7 +128,6 @@ def main():
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(os.path.dirname(HERE))
     RES = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
-    RES = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
     IN_THR, AUS_THR = 50.0, 25.0
     CI = dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
     PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]

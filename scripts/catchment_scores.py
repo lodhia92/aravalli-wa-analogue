@@ -66,8 +66,6 @@ def main():
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(HERE)
     RES = f"{HERE}/results"; DR = f"{RES}/drainage"
-    RES = f"{HERE}/results"; DR = f"{RES}/drainage"
-    IN_THR = 50.0; AU_THR = 25.0
     IN_THR = 50.0; AU_THR = 25.0
     ELEMS = ["Ce", "Nd", "Pr", "Dy", "Zr", "Hf", "Ti"]
     FP = {"monazite_LREE": ["Ce", "Nd", "Pr"], "xenotime_HREE": ["Dy"],
@@ -78,13 +76,11 @@ def main():
     ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
     sand = india("sandmata"); mang = india("mangalwar")
-    sand = india("sandmata"); mang = india("mangalwar")
     NG = paths.NGSA
     with open(NG, encoding="latin-1") as f:
         H = list(csv.reader(f))[11]
     cidx = {el: findcol(el) for el in ELEMS}
     cidx = {k: v for k, v in cidx.items() if v is not None}
-    ordered = sorted(cidx.items(), key=lambda kv: kv[1]); use = [0] + [v for _, v in ordered]
     ordered = sorted(cidx.items(), key=lambda kv: kv[1]); use = [0] + [v for _, v in ordered]
     ng = pd.read_csv(NG, header=None, skiprows=12, usecols=use, encoding="latin-1", low_memory=False)
     ng.columns = ["SITEID"] + [k for k, _ in ordered]
@@ -95,7 +91,6 @@ def main():
     yiln = aus("yilgarn", "Y+N", "Youanmi+Narryer")
     ngcm_all = pd.concat([sand, mang], ignore_index=True)
     ngsa_all = pd.concat([wapp, yiln], ignore_index=True)
-    mu_in, sd_in = zscore(ngcm_all); mu_au, sd_au = zscore(ngsa_all)
     mu_in, sd_in = zscore(ngcm_all); mu_au, sd_au = zscore(ngsa_all)
     allsc = pd.concat([score(ngcm_all, mu_in, sd_in), score(ngsa_all, mu_au, sd_au)],
                       ignore_index=True)
