@@ -20,6 +20,7 @@ import sys
 
 import numpy as np
 import matching_sensitivity as core
+from aravalli_wa.stats import avg_rank, corr_rows
 import paths
 
 EXPECT = {"monazite (Ce,Nd,Pr)": 0.696, "xenotime (Dy)": 0.506}
@@ -37,8 +38,8 @@ def main():
         print("  FAIL expected 20 pairs")
     for lab in core.LAB:
         a, b = core.vectors(D, sel, lab)[:2]
-        ra, rb = core.avg_rank(a)[0], core.avg_rank(b)[0]
-        rho = float(core.corr_rows(ra[None, :], rb)[0])
+        ra, rb = avg_rank(a)[0], avg_rank(b)[0]
+        rho = float(corr_rows(ra[None, :], rb)[0])
         if lab in EXPECT:
             hit = abs(rho - EXPECT[lab]) <= TOL
             ok &= hit

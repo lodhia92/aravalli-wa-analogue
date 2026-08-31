@@ -36,9 +36,9 @@ import sys
 import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import matching_sensitivity as core  # 
-import containment_sensitivity as cont   # 
-
+import matching_sensitivity as core
+from aravalli_wa.stats import bh
+import containment_sensitivity as cont
 RES = os.path.join(HERE, "results")
 
 NEW = {
@@ -100,12 +100,12 @@ def main():
         assert got == want, f"published anchor moved: {lab} {got} != {want}"
     print("anchor holds: monazite %.3f, Dy %.3f" % (res[pub[0]][0], res[pub[1]][0]), flush=True)
 
-    q_all = dict(zip(pub + new, core.bh([res[l][1] for l in pub + new])))
-    q_pub = dict(zip(pub, core.bh([res[l][1] for l in pub])))
+    q_all = dict(zip(pub + new, bh([res[l][1] for l in pub + new])))
+    q_pub = dict(zip(pub, bh([res[l][1] for l in pub])))
     q_grp = {}
     for g in set(GROUP.values()):
         members = [BASE[g]] + [l for l in new if GROUP[l] == g]
-        q_grp.update(dict(zip(members, core.bh([res[l][1] for l in members]))))
+        q_grp.update(dict(zip(members, bh([res[l][1] for l in members]))))
 
     rows = []
     for lab in pub + new + demo:

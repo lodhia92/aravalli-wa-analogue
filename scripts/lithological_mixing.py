@@ -53,6 +53,7 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import matching_sensitivity as core  # matching, rank statistics, BH correction
+from aravalli_wa.stats import avg_rank, bh, corr_rows
 import containment_sensitivity as cont   # loader with the published thresholds
 
 RES = os.path.join(HERE, "results")
@@ -135,7 +136,7 @@ def run_scores():
             r, p = core.spearman_perm(b[ok], cov[ok])
             keep[lab] = (r, p, int(ok.sum()))
             ps.append(p)
-        qs = core.bh(ps)
+        qs = bh(ps)
         # is this measure just catchment area again?
         ra, _ = core.spearman_perm(cov, ar)
         for j, lab in enumerate(LAB):
@@ -169,22 +170,22 @@ def run_confound():
                      np.column_stack([ar[:, 0], X[MEASURES].values])))
     rows = []
     for cname, cov in controls:
-        C = np.column_stack([core.avg_rank(cov[:, j])[0] for j in range(cov.shape[1])])
+        C = np.column_stack([avg_rank(cov[:, j])[0] for j in range(cov.shape[1])])
         ps, keep = [], {}
         for lab in LAB:
             a, b = scorevecs(D, sel, lab)
             mask = np.isfinite(a) & np.isfinite(b)
-            ra, rb = core.avg_rank(a[mask])[0], core.avg_rank(b[mask])[0]
+            ra, rb = avg_rank(a[mask])[0], avg_rank(b[mask])[0]
             Xd = np.column_stack([np.ones(int(mask.sum())), C[mask]])
             resa = ra - Xd @ np.linalg.lstsq(Xd, ra, rcond=None)[0]
             resb = rb - Xd @ np.linalg.lstsq(Xd, rb, rcond=None)[0]
-            r = float(core.corr_rows(resa[None, :], resb)[0])
+            r = float(corr_rows(resa[None, :], resb)[0])
             n = len(resb)
-            null = np.abs(core.corr_rows(resb[core.bank(n)], resa))
+            null = np.abs(corr_rows(resb[core.bank(n)], resa))
             p = (np.sum(null >= abs(r)) + 1) / (core.NPERM + 1)
             keep[lab] = (r, p, n)
             ps.append(p)
-        qs = core.bh(ps)
+        qs = bh(ps)
         for j, lab in enumerate(LAB):
             r, p, n = keep[lab]
             rows.append(dict(controlling_for=cname, mineral=lab, n=n, partial_rho=round(r, 3),

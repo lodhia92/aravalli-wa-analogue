@@ -38,9 +38,9 @@ import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import matching_sensitivity as core  # 
-import containment_sensitivity as cont   # 
-
+import matching_sensitivity as core
+from aravalli_wa.stats import bh
+import containment_sensitivity as cont
 RES = os.path.join(HERE, "results")
 DOMS = core.DOMS
 
@@ -78,9 +78,9 @@ def main():
     print("published anchor holds after extending the element list: monazite %.3f, Dy %.3f"
           % (res[pub_labels[0]][0], res[pub_labels[1]][0]), flush=True)
 
-    q_pub_family = dict(zip(pub_labels, core.bh([res[l][1] for l in pub_labels])))
-    q_all_family = dict(zip(all_labels, core.bh([res[l][1] for l in all_labels])))
-    q_new_only = dict(zip(new_labels, core.bh([res[l][1] for l in new_labels])))
+    q_pub_family = dict(zip(pub_labels, bh([res[l][1] for l in pub_labels])))
+    q_all_family = dict(zip(all_labels, bh([res[l][1] for l in all_labels])))
+    q_new_only = dict(zip(new_labels, bh([res[l][1] for l in new_labels])))
 
     rows = []
     for lab in all_labels:

@@ -52,6 +52,8 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import matching_sensitivity as core  # matching, statistics, BH correction
+from aravalli_wa.stats import avg_rank, bh, corr_rows
+from aravalli_wa.composition import logr
 import paths
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
@@ -150,8 +152,8 @@ def build_D(in_thr, aus_thr):
     sand, mang = india("sandmata"), india("mangalwar")
     wapp, yiln = aus("wa_palaeoprot", "WA_PP"), aus("yilgarn", "Y+N")
     ngcm_all, ngsa_all = pd.concat([sand, mang]), pd.concat([wapp, yiln])
-    mi, si = core.logr(ngcm_all).mean(), core.logr(ngcm_all).std(ddof=0)
-    ma, sa = core.logr(ngsa_all).mean(), core.logr(ngsa_all).std(ddof=0)
+    mi, si = logr(ngcm_all).mean(), logr(ngcm_all).std(ddof=0)
+    ma, sa = logr(ngsa_all).mean(), logr(ngsa_all).std(ddof=0)
     mu_in = np.log(ngcm_all[PATH].where(ngcm_all[PATH] > 0)).mean()
     sd_in = np.log(ngcm_all[PATH].where(ngcm_all[PATH] > 0)).std(ddof=0)
     mu_au = np.log(ngsa_all[PATH].where(ngsa_all[PATH] > 0)).mean()
@@ -167,8 +169,8 @@ def build_D(in_thr, aus_thr):
 
     D = {}
     for dom, idf, adf in [(DOMS[0], sand, wapp), (DOMS[1], mang, yiln)]:
-        zi = ((core.logr(idf) - mi) / si)[MATCH].dropna()
-        za = ((core.logr(adf) - ma) / sa)[MATCH].dropna()
+        zi = ((logr(idf) - mi) / si)[MATCH].dropna()
+        za = ((logr(adf) - ma) / sa)[MATCH].dropna()
         isub, asub = idf.loc[zi.index], adf.loc[za.index]
         D[dom] = dict(Iv=zi.values, Av=za.values,
                       isid=isub["sid"].values, asid=asub["sid"].values,
@@ -182,7 +184,7 @@ def build_D(in_thr, aus_thr):
 def transfer(D, sel):
     """Spearman rho, permutation p and BH q for every fingerprint under one pair selection."""
     res = {lab: core.spearman_perm(*core.vectors(D, sel, lab)[:2]) for lab in LAB}
-    qs = dict(zip(LAB, core.bh([res[l][1] for l in LAB])))
+    qs = dict(zip(LAB, bh([res[l][1] for l in LAB])))
     return res, qs
 
 
@@ -254,8 +256,8 @@ def corr_pool(s, c):
     if len(s) <= 200:
         r, p = core.spearman_perm(s, c)
         return r, p, "permutation, 100 000"
-    ra, rb = core.avg_rank(s)[0], core.avg_rank(c)[0]
-    r = float(core.corr_rows(ra[None, :], rb)[0])
+    ra, rb = avg_rank(s)[0], avg_rank(c)[0]
+    r = float(corr_rows(ra[None, :], rb)[0])
     if not np.isfinite(r) or abs(r) >= 1:
         return r, np.nan, "undefined"
     n = len(s)
@@ -281,7 +283,7 @@ def run_confound():
                 r, p, how = corr_pool(s[ok], c[ok])
                 keep[lab] = (r, p, int(ok.sum()), how)
                 ps.append(1.0 if not np.isfinite(p) else p)
-            qs = core.bh(ps)
+            qs = bh(ps)
             for j, lab in enumerate(LAB):
                 r, p, n, how = keep[lab]
                 rows.append(dict(side=side, scope=scope, mineral=lab, n=n,
@@ -318,7 +320,7 @@ def run_confound():
                        ("Indian containment", pct_in),
                        ("both containments", np.column_stack([pct_au, pct_in]))):
         cov2 = cov if cov.ndim > 1 else cov[:, None]
-        C = np.column_stack([core.avg_rank(cov2[:, j])[0] for j in range(cov2.shape[1])])
+        C = np.column_stack([avg_rank(cov2[:, j])[0] for j in range(cov2.shape[1])])
         ps, keep = [], {}
         for lab in LAB:
             a, b, _ = core.vectors(D, sel, lab)
@@ -331,17 +333,17 @@ def run_confound():
                 bb.append(D[dom]["SA"][lab][apos])
             aa, bb = np.concatenate(aa), np.concatenate(bb)
             mask = np.isfinite(aa) & np.isfinite(bb)
-            ra, rb = core.avg_rank(aa[mask])[0], core.avg_rank(bb[mask])[0]
+            ra, rb = avg_rank(aa[mask])[0], avg_rank(bb[mask])[0]
             X = np.column_stack([np.ones(int(mask.sum())), C[mask]])
             resa = ra - X @ np.linalg.lstsq(X, ra, rcond=None)[0]
             resb = rb - X @ np.linalg.lstsq(X, rb, rcond=None)[0]
-            r = float(core.corr_rows(resa[None, :], resb)[0])
+            r = float(corr_rows(resa[None, :], resb)[0])
             n = len(resb)
-            null = np.abs(core.corr_rows(resb[core.bank(n)], resa))
+            null = np.abs(corr_rows(resb[core.bank(n)], resa))
             p = (np.sum(null >= abs(r)) + 1) / (core.NPERM + 1)
             keep[lab] = (r, p, n)
             ps.append(p)
-        qs = core.bh(ps)
+        qs = bh(ps)
         for j, lab in enumerate(LAB):
             r, p, n = keep[lab]
             rows.append(dict(controlling_for=cname, mineral=lab, n=n, partial_rho=round(r, 3),
@@ -432,8 +434,8 @@ def run_power():
             dists[b] = pair_distance(Ds, sel)
             for lab in LAB:
                 a, bb, _ = core.vectors(Ds, sel, lab)
-                ra, rb = core.avg_rank(a)[0], core.avg_rank(bb)[0]
-                draws[lab][b] = float(core.corr_rows(ra[None, :], rb)[0])
+                ra, rb = avg_rank(a)[0], avg_rank(bb)[0]
+                draws[lab][b] = float(corr_rows(ra[None, :], rb)[0])
 
         for lab in LAB:
             dr = draws[lab]

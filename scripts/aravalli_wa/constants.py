@@ -30,6 +30,24 @@ MATCH_RATIOS = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
 # The eight pathfinder elements whose transfer between matched catchments is tested.
 PATHFINDER_ELEMENTS = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
 
+# The five host-mineral fingerprints, named by element association, and their elements.
+# ORDER MATTERS. Scripts that draw repeatedly from one module-level generator consume
+# permutations in this order, so reordering these keys changes their reported probabilities
+# in the third decimal. This is the order used by fingerprint_transfer.py, which is the source
+# of the published transfer table. matcher_independence.py and pair_validation.py declare the
+# same five fingerprints in a different order and keep their own copy for that reason.
+FINGERPRINTS = {
+    "monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"],
+    "xenotime (Dy)": ["Dy"],
+    "zircon (Zr,Hf)": ["Zr", "Hf"],
+    "Ti-oxide (Ti)": ["Ti"],
+    "apatite (P)": ["P"],
+}
+FINGERPRINT_LABELS = list(FINGERPRINTS)
+
+# The two Aravalli basement domains the Indian samples are drawn from.
+DOMAINS = ["Palaeoproterozoic", "Archaean"]
+
 # Oxide to element conversion. The survey reports Ti as TiO2 and P as P2O5 in weight per cent;
 # the analysis uses element concentrations in mg/kg. The factors are the element's mass fraction
 # of the oxide (Ti 47.867/79.866, P 2x30.974/141.944, Al 2x26.982/101.961) and one weight per
