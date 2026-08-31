@@ -18,6 +18,7 @@ import csv, os
 import numpy as np, pandas as pd
 
 import paths
+from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
@@ -53,8 +54,8 @@ def main():
     for c in ELS + ["TiO2", "P2O5", "LAT", "LON"]:
         if c in ar.columns:
             ar[c] = pd.to_numeric(ar[c], errors="coerce")
-    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
-    ar["P"] = ar["P2O5"] * 1e4 * 0.4364
+    ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
+    ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
     ngcm = pd.concat([india("sandmata"), india("mangalwar")])
     NG = paths.NGSA

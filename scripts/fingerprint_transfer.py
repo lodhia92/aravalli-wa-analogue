@@ -45,6 +45,7 @@ import paths
 from aravalli_wa.composition import logr, ratios
 
 from aravalli_wa.stats import avg_rank, bh, corr_rows
+from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 NPERM, NBOOT = 100000, 10000
 
@@ -109,8 +110,8 @@ def main():
     for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
               "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
-    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
-    ar["P"] = ar["P2O5"] * 1e4 * 0.4364
+    ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
+    ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
     sand, mang = india("sandmata"), india("mangalwar")
     NG = paths.NGSA

@@ -60,6 +60,7 @@ def score(df, mu, sd):
     return out
 
 import json
+from aravalli_wa.constants import TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 def main():
     global AU_THR, DR, ELEMS, FP, H, HERE, IN_THR, NG, PROJ, RES, _, allsc, ar, c, cidx, d, dom, el, expected, f, g, k, mang, match, mu_au, mu_in, name, ng, ngcm_all, ngsa_all, ok, ordered, pno, r, rho, robust, rp, s, sand, sd_au, sd_in, thr, use, v, wapp, x, y, yiln
@@ -73,7 +74,7 @@ def main():
     ar = pd.read_csv(paths.NGCM_TABLE)
     for c in ["TiO2", "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
-    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
+    ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
     sand = india("sandmata"); mang = india("mangalwar")
     NG = paths.NGSA

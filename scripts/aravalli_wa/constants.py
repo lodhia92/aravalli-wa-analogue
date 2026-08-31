@@ -29,3 +29,12 @@ MATCH_RATIOS = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
 
 # The eight pathfinder elements whose transfer between matched catchments is tested.
 PATHFINDER_ELEMENTS = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
+
+# Oxide to element conversion. The survey reports Ti as TiO2 and P as P2O5 in weight per cent;
+# the analysis uses element concentrations in mg/kg. The factors are the element's mass fraction
+# of the oxide (Ti 47.867/79.866, P 2x30.974/141.944, Al 2x26.982/101.961) and one weight per
+# cent is ten thousand mg/kg.
+WT_PCT_TO_MG_KG = 1e4
+TI_MASS_FRACTION_OF_TIO2 = 0.5995
+P_MASS_FRACTION_OF_P2O5 = 0.4364
+AL_MASS_FRACTION_OF_AL2O3 = 0.5293

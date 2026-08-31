@@ -53,6 +53,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import matching_sensitivity as core  # matching, statistics, BH correction
 import paths
+from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")
@@ -76,8 +77,8 @@ def load_raw():
     for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
               "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
-    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
-    ar["P"] = ar["P2O5"] * 1e4 * 0.4364
+    ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
+    ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
 
     NG = paths.NGSA

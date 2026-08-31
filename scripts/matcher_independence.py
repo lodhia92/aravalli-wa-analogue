@@ -39,6 +39,7 @@ import numpy as np, pandas as pd
 import paths
 
 from aravalli_wa.stats import zscore_elem
+from aravalli_wa.constants import AL_MASS_FRACTION_OF_AL2O3, P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 def ratios(df):
     o = pd.DataFrame(index=df.index)
@@ -145,9 +146,9 @@ def main():
            "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "Cr", "Ni", "V", "Ga", "Ba", "Sr", "Al2O3", "LAT", "LON"]
     for c in NUM:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
-    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
-    ar["P"] = ar["P2O5"] * 1e4 * 0.4364
-    ar["Al"] = ar["Al2O3"] * 1e4 * 0.5293          # oxide wt% -> element mg/kg
+    ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
+    ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
+    ar["Al"] = ar["Al2O3"] * WT_PCT_TO_MG_KG * AL_MASS_FRACTION_OF_AL2O3          # oxide wt% -> element mg/kg
     ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
     sand, mang = india("sandmata"), india("mangalwar")
     NG = paths.NGSA
