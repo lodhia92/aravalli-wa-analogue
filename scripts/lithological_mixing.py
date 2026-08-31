@@ -46,7 +46,6 @@ expected file locations are given in data/README.md.
 import argparse
 import json
 import os
-import sys
 
 import numpy as np
 import pandas as pd

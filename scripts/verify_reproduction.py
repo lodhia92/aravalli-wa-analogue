@@ -15,10 +15,7 @@ Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
 expected file locations are given in data/README.md.
 """
-import os
-import sys
 
-import numpy as np
 import matching_sensitivity as core
 from aravalli_wa.stats import avg_rank, corr_rows
 import paths

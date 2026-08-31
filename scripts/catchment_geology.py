@@ -21,7 +21,6 @@ import argparse, json, os
 import numpy as np
 import pandas as pd
 import shapefile
-from matplotlib.path import Path
 import paths
 from aravalli_wa.geometry import geom_to_path, shape_to_path
 

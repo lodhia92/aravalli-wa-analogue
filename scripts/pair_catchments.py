@@ -6,8 +6,8 @@ Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
 expected file locations are given in data/README.md.
 """
-import argparse, json, os, csv
-import numpy as np, pandas as pd, shapefile
+import argparse, json, os
+import pandas as pd, shapefile
 from shapely.geometry import shape as shp, Point, mapping
 from shapely.ops import unary_union
 from shapely.strtree import STRtree

@@ -32,9 +32,7 @@ Repository: aravalli-wa-analogue. Run order is given in README.md; data sources 
 expected file locations are given in data/README.md.
 """
 import os
-import sys
 
-import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -15,7 +15,7 @@ expected file locations are given in data/README.md.
 """
 import csv, os
 
-import numpy as np, pandas as pd
+import pandas as pd
 
 import paths
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG

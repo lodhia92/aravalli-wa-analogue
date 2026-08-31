@@ -25,9 +25,8 @@ Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
 expected file locations are given in data/README.md.
 """
-import csv, json, os, sys
+import csv, json, os
 import numpy as np
-from matplotlib.path import Path
 import paths
 from aravalli_wa.geometry import geom_to_path
 
