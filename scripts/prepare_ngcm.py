@@ -18,9 +18,7 @@ domain.
 
 Output: the table at paths.NGCM_TABLE
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse
 import glob

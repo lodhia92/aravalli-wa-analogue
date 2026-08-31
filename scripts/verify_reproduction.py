@@ -11,9 +11,7 @@ trusting any other output.
 
     python scripts/verify_reproduction.py
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 
 import matching_sensitivity as core

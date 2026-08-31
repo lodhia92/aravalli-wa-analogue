@@ -38,9 +38,7 @@ Outputs: results/score_thresholds.csv
          results/score_threshold_stability.csv
          results/score_break_tests.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 

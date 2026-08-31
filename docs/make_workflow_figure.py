@@ -5,7 +5,7 @@ Boxes carry a short code and a two or three word descriptor. The key on the righ
 code, the script filename and what the script produces, so the boxes stay small enough for the
 text to remain legible at print size.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import matplotlib
 matplotlib.use("Agg")

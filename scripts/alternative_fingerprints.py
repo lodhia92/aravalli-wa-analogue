@@ -5,9 +5,7 @@ for xenotime than Dy alone, and is Ce+Nd+Pr the right light rare-earth set for m
 at the drainage-selected Australian sites, same join as mineralogical_validation.py.
 Output: results/alternative_fingerprints.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv, os
 

@@ -22,9 +22,7 @@ Matching ratios (weathering-robust source-rock discriminators; McLennan/Taylor):
   Th/Sc, La/Sc, Th/Co, Eu/Eu*, (La/Yb)n, Nb/Y.
 Chondrite (McDonough & Sun 1995, CI): La .237 Yb .170 Sm .148 Eu .0580 Gd .199 ppm.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv
 

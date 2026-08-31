@@ -15,7 +15,7 @@ environment variable ARAVALLI_WA_DATA to a directory holding the same layout.
       gswa/GEOLOGY_500k_Tectonics_GDA2020_SHP/ESRI/SHAPEFILES/500k_tectonicp.shp
       gswa/Minedex_GDA2020_CSV/Sites.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 

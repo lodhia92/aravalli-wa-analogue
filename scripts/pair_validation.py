@@ -5,9 +5,7 @@
      relaxed Australian drainage thresholds (25/15/10%), to show whether the trend strengthens with n.
  Matching is unchanged from analogue_pairing.py (six within-survey-standardised provenance ratios).
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv, numpy as np, pandas as pd
 

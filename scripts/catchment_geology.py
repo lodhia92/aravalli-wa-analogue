@@ -13,9 +13,7 @@ points.
 Output: results/catchment_geology.csv  (one row per catchment per unit)
 Run:    python scripts/catchment_geology.py --start 1 --end 20
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse, json, os
 import numpy as np

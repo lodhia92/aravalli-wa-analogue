@@ -16,9 +16,7 @@ Outputs: results/catchment_scores.csv with per-domain top-decile flags and
 robust-pair numbers. Verification: reproduces the pair_validation.py per-mineral rho on the
 robust-20 pairs from the exported scores.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv, numpy as np, pandas as pd
 

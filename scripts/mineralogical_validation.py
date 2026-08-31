@@ -16,9 +16,7 @@ and all NGSA sites carrying HMMA mineralogy.
 Output: results/mineralogical_validation.csv, results/mineralogical_site_scores.csv
 Run:    python scripts/mineralogical_validation.py
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv, os
 import numpy as np

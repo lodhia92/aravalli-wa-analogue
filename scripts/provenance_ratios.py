@@ -11,9 +11,7 @@ lon/lat. Australia geochem: NGSA_data.csv ICP-MS columns, joined on SITEID.
 
 (La/Yb)n uses CI chondrite (McDonough & Sun 1995): La 0.237, Yb 0.170 ppm.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv
 

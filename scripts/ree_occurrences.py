@@ -21,9 +21,7 @@ Outputs
 Run
   python scripts/ree_occurrences.py
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv, json, os
 import numpy as np
@@ -53,7 +51,7 @@ def main():
     feats = json.load(open(os.path.join(RES, "pair_catchments_australia.geojson")))["features"]
     print("catchments: %d" % len(feats))
 
-    sites = []
+    sites, no_position = [], 0
     with open(MINEDEX, encoding="utf-8-sig", errors="replace") as fh:
         for rec in csv.DictReader(fh):
             if not is_ree(rec):
@@ -61,9 +59,13 @@ def main():
             try:
                 lat = float(rec["Latitude"]); lon = float(rec["Longitude"])
             except (TypeError, ValueError):
+                # A MINEDEX record with no usable position. Counted, not dropped in silence.
+                no_position += 1
                 continue
             sites.append((lon, lat, rec))
     print("MINEDEX rare-earth sites with coordinates: %d" % len(sites))
+    if no_position:
+        print("  rare-earth records skipped for a missing or non-numeric position: %d" % no_position)
 
     # de-duplicate on (ShortTitle, rounded position): MINEDEX repeats group/infrastructure rows
     seen, uniq = set(), []

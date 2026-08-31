@@ -35,9 +35,7 @@ Run
   python scripts/grain_size_morphometry.py --part fractions
   python scripts/grain_size_morphometry.py --part morphometry
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse
 import csv
@@ -78,7 +76,7 @@ def spearman_perm(a, b):
     return rho, (np.sum(null >= abs(rho)) + 1) / (NPERM + 1)
 
 
-# ---------------------------------------------------------------- Indian side (invariant)
+# The Indian pool does not vary across the grain-size treatments; it is built once.
 ar = pd.read_csv(paths.NGCM_TABLE)
 for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
           "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
@@ -101,7 +99,8 @@ sand, mang = india("sandmata"), india("mangalwar")
 ngcm_all = pd.concat([sand, mang])
 mi, si = logr(ngcm_all).mean(), logr(ngcm_all).std(ddof=0)
 
-# ---------------------------------------------------------------- Australian side, all six rows
+# The Australian pool is rebuilt per treatment: two size fractions by two sample depths,
+# plus the published median across all of them.
 NG = paths.NGSA
 with open(NG, encoding="latin-1") as f:
     H = list(csv.reader(f))[11]

@@ -9,9 +9,7 @@ Outputs
   results/data_quality.csv   one row per element per pool
   results/analytical_methods.csv        analytical method, unit and detection limit per element
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv, os
 

@@ -13,9 +13,7 @@ lithology, tectonic setting and age range.
 Output: results/terrane_sites.csv
 Run:    python scripts/terrane_attribution.py
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 import numpy as np
@@ -36,7 +34,6 @@ KEEP = ["TECTNAME", "OROGEN", "PROVINCE", "CRATON", "DOMAIN_", "LITHOLOGY",
 
 
 def main():
-    # ---- sites to attribute -------------------------------------------------
     wapp = pd.read_csv(os.path.join(DR, "wa_palaeoprot_contained.csv"))
     wapp = wapp[wapp.pct_in_domain >= AUS_THR].copy()
     wapp["pool"] = "WA_PP"
@@ -61,8 +58,6 @@ def main():
     print("sites to attribute: %d (WA_PP %d, Y+N %d); of these %d are pair members"
           % (len(sites), (sites.pool == "WA_PP").sum(), (sites.pool == "Y+N").sum(),
              sites.pair_no.notna().sum()))
-
-    # ---- tectonic units -----------------------------------------------------
     r = shapefile.Reader(SHP)
     fields = [f[0] for f in r.fields[1:]]
     idx = {k: fields.index(k) for k in KEEP if k in fields}

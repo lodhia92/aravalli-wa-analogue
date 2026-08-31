@@ -8,6 +8,4 @@ statistics and the correction cannot drift between analyses. Before this package
 same helpers were defined independently in up to ten files.
 
 Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
 """

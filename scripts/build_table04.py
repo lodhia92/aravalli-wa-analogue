@@ -8,9 +8,7 @@ identified by their National Geochemical Survey of Australia site and sample ide
 Input : results/analogue_pairs.csv
 Output: results/table04_cells.tsv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv
 import os

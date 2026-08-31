@@ -4,9 +4,7 @@ Rank statistics, permutation probabilities and the false-discovery-rate correcti
 Every reported correlation, probability and corrected probability in the study comes from the
 functions below, so that no two analyses can use different implementations of the same statistic.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import numpy as np
 import pandas as pd

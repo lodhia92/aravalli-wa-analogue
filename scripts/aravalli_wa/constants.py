@@ -4,9 +4,7 @@ Analytical constants shared across the workflow, with their units.
 These are the values the published analysis used. Changing any of them changes a published
 number, so they are declared once here rather than repeated in each script.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 
 # Permutation convention. A complete unmodified run of a script reproduces its published

@@ -3,9 +3,7 @@ Converting shapefile and GeoJSON geometries to matplotlib paths for point-in-pol
 
 matplotlib.path is used only as a geometry primitive here; nothing in this package plots.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import numpy as np
 from matplotlib.path import Path

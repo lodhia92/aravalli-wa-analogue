@@ -5,9 +5,7 @@ then verify every emitted cell back against those files. Writes results/table08_
 An asterisk marks a fingerprint whose Benjamini-Hochberg q-value is below 0.05 within that variant.
 The two control rows carry the mean and the 95th percentile of 10 000 random-pairing draws.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 

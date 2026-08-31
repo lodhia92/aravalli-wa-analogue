@@ -39,9 +39,7 @@ Outputs: results/lithological_mixing.csv
          results/lithological_mixing_scores.csv
          results/lithological_mixing_partial.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse
 import json

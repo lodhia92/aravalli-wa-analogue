@@ -18,9 +18,7 @@ Usage:
 Output CSV has every sample inside the region with its catchment area and the percentage of
 that catchment inside the domain (pct_in_domain); filter by threshold afterwards.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse, json, os
 import pandas as pd

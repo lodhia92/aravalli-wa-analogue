@@ -29,9 +29,7 @@ Control points (pixel x, y in the FULL render; degree value), measured by OCR:
   E74 (363,1761)=74, E75 (909,284)=75                         [longitude]
 Re-measure these if the figure is re-rendered at a different size/crop.
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, json
 

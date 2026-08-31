@@ -37,9 +37,7 @@ Outputs: results/containment_grid.csv
          results/containment_vs_scores.csv
          results/containment_covariate.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse
 import csv
@@ -68,7 +66,6 @@ _RAW = {}
 _D = {}
 
 
-# ---------------------------------------------------------------- loading
 
 def load_raw():
     """Read the two geochemistry tables and the four drainage tables once."""
@@ -187,7 +184,6 @@ def transfer(D, sel):
     return res, qs
 
 
-# ---------------------------------------------------------------- part 1: the grid
 
 GRID = ([("Indian threshold varied, Australia held at 25", t, 25.0) for t in (40., 50., 60., 75.)]
         + [("Australian threshold varied, India held at 50", 50., t) for t in (25., 40., 50., 60.)]
@@ -235,7 +231,6 @@ def run_grid():
     print("\nwrote results/containment_grid.csv")
 
 
-# ---------------------------------------------------------------- part 2: containment as covariate
 
 def corr_pool(s, c):
     """Spearman of a score against containment over a whole eligible pool.
@@ -365,7 +360,6 @@ def run_confound():
 
 
 
-# ---------------------------------------------------------------- part 3: is it size, not containment?
 
 POWER_DRAWS = 1000
 POWER_SEED = 20260827

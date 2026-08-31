@@ -27,9 +27,7 @@ asserts that it does not: monazite must return 0.696 and the published Dy finger
 Inputs : as containment_sensitivity (Indian and Australian geochemistry, drainage tables)
 Outputs: results/hree_transfer.csv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 

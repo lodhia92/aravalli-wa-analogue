@@ -13,9 +13,7 @@ explicitly, because a header match on Fe alone returns no column and leaves the 
 Inputs : results/analogue_pairs.csv, the NGSA table resolved by paths.NGSA
 Output : results/table06_cells.tsv
 
-Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
-Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
-expected file locations are given in data/README.md.
+Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv
 import os
