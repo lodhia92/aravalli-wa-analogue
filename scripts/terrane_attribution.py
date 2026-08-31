@@ -23,6 +23,7 @@ import pandas as pd
 import shapefile
 from matplotlib.path import Path
 import paths
+from aravalli_wa.geometry import shape_to_path
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
@@ -33,24 +34,6 @@ AUS_THR = 25.0   # same threshold as analogue_pairing.py
 
 KEEP = ["TECTNAME", "OROGEN", "PROVINCE", "CRATON", "DOMAIN_", "LITHOLOGY",
         "TECTSETTIN", "TSETT_QUAL", "ERA_FROM", "ERA_TO", "MAX_AGE_MA", "MIN_AGE_MA"]
-
-
-def shape_to_path(shp):
-    """Compound matplotlib Path from a shapefile polygon, holes included."""
-    pts = np.asarray(shp.points, dtype=float)
-    parts = list(shp.parts) + [len(pts)]
-    verts, codes = [], []
-    for i in range(len(parts) - 1):
-        seg = pts[parts[i]:parts[i + 1]]
-        if len(seg) < 3:
-            continue
-        verts.append(seg)
-        c = np.full(len(seg), Path.LINETO, dtype=np.uint8)
-        c[0] = Path.MOVETO
-        codes.append(c)
-    if not verts:
-        return None
-    return Path(np.vstack(verts), np.concatenate(codes))
 
 
 def main():

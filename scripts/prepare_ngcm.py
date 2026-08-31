@@ -27,12 +27,15 @@ import glob
 import os
 import re
 import warnings
+import zipfile
 
 import pandas as pd
 
 import paths
 
 warnings.filterwarnings("ignore")
+
+SKIPPED = []   # workbooks that could not be read, reported at the end
 CACHE = os.path.join(paths.RESULTS, "_ngcm_{}.csv")
 PACKAGES = ("*package A*XRF*.xlsx", "*package*ICPMS*.xlsx", "*package B*Other*.xlsx")
 ELEMENT = re.compile(r"^[A-Z][a-z]?[0-9]?[A-Za-z0-9]*$")
@@ -63,8 +66,11 @@ def load_state(state):
             for f in glob.glob(os.path.join(sheet_dir, pattern)):
                 try:
                     parts.append(sheet_elements(f))
-                except Exception as ex:
-                    print(f"  skipped {os.path.basename(f)}: {ex}")
+                except (ValueError, KeyError, OSError, zipfile.BadZipFile) as ex:
+                    # A package workbook openpyxl cannot parse, or one missing a required
+                    # sheet. Named and counted so that no survey file is dropped silently.
+                    SKIPPED.append(os.path.basename(f))
+                    print(f"  SKIPPED {os.path.basename(f)}: {type(ex).__name__}: {ex}")
         if not parts:
             continue
         merged = parts[0]

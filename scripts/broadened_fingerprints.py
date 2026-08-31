@@ -36,9 +36,8 @@ import sys
 import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(HERE, "scripts"))
-import matching_sensitivity as core          # noqa: E402
-import containment_sensitivity as cont           # noqa: E402
+import matching_sensitivity as core  # 
+import containment_sensitivity as cont   # 
 
 RES = os.path.join(HERE, "results")
 

@@ -29,6 +29,7 @@ import csv, json, os, sys
 import numpy as np
 from matplotlib.path import Path
 import paths
+from aravalli_wa.geometry import geom_to_path
 
 csv.field_size_limit(10 ** 7)
 
@@ -41,25 +42,6 @@ MINEDEX = paths.MINEDEX
 KEEP = ["SiteCode", "ShortTitle", "Title", "Type", "SubType", "Stage",
         "Commodities", "TargetCommodityGroups", "MineralizationStyle",
         "Latitude", "Longitude"]
-
-
-def geom_to_path(geom):
-    polys = geom["coordinates"] if geom["type"] == "MultiPolygon" else [geom["coordinates"]]
-    verts, codes = [], []
-    for poly in polys:
-        for ring in poly:
-            seg = np.asarray(ring, dtype=float)[:, :2]
-            if len(seg) < 3:
-                continue
-            verts.append(seg)
-            c = np.full(len(seg), Path.LINETO, dtype=np.uint8)
-            c[0] = Path.MOVETO
-            codes.append(c)
-    if not verts:
-        return None, None
-    v = np.vstack(verts)
-    return Path(v, np.concatenate(codes)), (v[:, 0].min(), v[:, 1].min(),
-                                            v[:, 0].max(), v[:, 1].max())
 
 
 def is_ree(rec):

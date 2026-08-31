@@ -22,20 +22,7 @@ expected file locations are given in data/README.md.
 """
 import os, csv, numpy as np, pandas as pd
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJ = os.path.dirname(HERE)
-RES = f"{HERE}/results"; DR = f"{RES}/drainage"
-IN_THR = 50.0; AU_THR = 25.0
-ELEMS = ["Ce", "Nd", "Pr", "Dy", "Zr", "Hf", "Ti"]
-FP = {"monazite_LREE": ["Ce", "Nd", "Pr"], "xenotime_HREE": ["Dy"],
-      "zircon_ZrHf": ["Zr", "Hf"], "tioxide_Ti": ["Ti"]}
-
-# ---- India (NGCM) ----
-ar = pd.read_csv(paths.NGCM_TABLE)
-for c in ["TiO2", "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
-    ar[c] = pd.to_numeric(ar[c], errors="coerce")
-ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
-ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
+import paths
 
 def india(name):
     d = pd.read_csv(f"{DR}/{name}_contained.csv"); d = d[d.pct_in_domain >= IN_THR]
@@ -46,27 +33,11 @@ def india(name):
     m["survey"] = "NGCM"; m["domain"] = {"sandmata": "Sandmata", "mangalwar": "Mangalwar"}[name]
     return m[["sid", "survey", "domain", "lat", "lon"] + ELEMS]
 
-sand = india("sandmata"); mang = india("mangalwar")
-
-# ---- Australia (NGSA; corrected sorted-index loader, see section 5d of the log) ----
-NG = paths.NGSA
-with open(NG, encoding="latin-1") as f:
-    H = list(csv.reader(f))[11]
-
 def findcol(el):
     for meth in ("ICP-MS", "XRF"):
         for i, c in enumerate(H):
             if c.strip().startswith(f"{el} {meth}"):
                 return i
-
-cidx = {el: findcol(el) for el in ELEMS}
-cidx = {k: v for k, v in cidx.items() if v is not None}
-ordered = sorted(cidx.items(), key=lambda kv: kv[1]); use = [0] + [v for _, v in ordered]
-ng = pd.read_csv(NG, header=None, skiprows=12, usecols=use, encoding="latin-1", low_memory=False)
-ng.columns = ["SITEID"] + [k for k, _ in ordered]
-for c in ng.columns:
-    ng[c] = pd.to_numeric(ng[c], errors="coerce")
-ng = ng.groupby("SITEID").median(numeric_only=True)
 
 def aus(name, label, domain):
     d = pd.read_csv(f"{DR}/{name}_contained.csv"); d = d[d.pct_in_domain >= AU_THR]
@@ -77,17 +48,9 @@ def aus(name, label, domain):
     m["survey"] = "NGSA"; m["domain"] = domain
     return m[["sid", "survey", "domain", "lat", "lon"] + ELEMS]
 
-wapp = aus("wa_palaeoprot", "WA_PP", "WA_Palaeoproterozoic")
-yiln = aus("yilgarn", "Y+N", "Youanmi+Narryer")
-
-# ---- within-survey standardisation (same pools as pair_validation.py) ----
 def zscore(pool):
     x = np.log(pool[ELEMS].where(pool[ELEMS] > 0))
     return x.mean(), x.std(ddof=0)
-
-ngcm_all = pd.concat([sand, mang], ignore_index=True)
-ngsa_all = pd.concat([wapp, yiln], ignore_index=True)
-mu_in, sd_in = zscore(ngcm_all); mu_au, sd_au = zscore(ngsa_all)
 
 def score(df, mu, sd):
     z = (np.log(df[ELEMS].where(df[ELEMS] > 0)) - mu) / sd
@@ -96,45 +59,77 @@ def score(df, mu, sd):
         out[name] = z[grp].mean(axis=1)
     return out
 
-allsc = pd.concat([score(ngcm_all, mu_in, sd_in), score(ngsa_all, mu_au, sd_au)],
-                  ignore_index=True)
-
-# per-domain top-decile flags
-for name in FP:
-    allsc[f"top10_{name}"] = False
-    for dom, g in allsc.groupby("domain"):
-        thr = g[name].quantile(0.90)
-        allsc.loc[g.index[g[name] >= thr], f"top10_{name}"] = True
-
-# robust-pair membership
 import json
-import paths
-rp = pd.read_csv(f"{RES}/analogue_pairs.csv")
-pno = {}
-for f in json.load(open(f"{RES}/pair_catchments_india.geojson"))["features"]:
-    pno[f["properties"]["sid"]] = f["properties"]["pair_no"]
-for f in json.load(open(f"{RES}/pair_catchments_australia.geojson"))["features"]:
-    pno[f["properties"]["sid"]] = f["properties"]["pair_no"]
-allsc["pair_no"] = allsc.sid.map(pno).astype("Int64")
 
-allsc.to_csv(f"{RES}/catchment_scores.csv", index=False)
-print("wrote catchment_scores.csv:", len(allsc), "samples")
-print(allsc.groupby(["survey", "domain"]).size())
+def main():
+    global AU_THR, DR, ELEMS, FP, H, HERE, IN_THR, NG, PROJ, RES, _, allsc, ar, c, cidx, d, dom, el, expected, f, g, k, mang, match, mu_au, mu_in, name, ng, ngcm_all, ngsa_all, ok, ordered, pno, r, rho, robust, rp, s, sand, sd_au, sd_in, thr, use, v, wapp, x, y, yiln
+    HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    PROJ = os.path.dirname(HERE)
+    RES = f"{HERE}/results"; DR = f"{RES}/drainage"
+    RES = f"{HERE}/results"; DR = f"{RES}/drainage"
+    IN_THR = 50.0; AU_THR = 25.0
+    IN_THR = 50.0; AU_THR = 25.0
+    ELEMS = ["Ce", "Nd", "Pr", "Dy", "Zr", "Hf", "Ti"]
+    FP = {"monazite_LREE": ["Ce", "Nd", "Pr"], "xenotime_HREE": ["Dy"],
+          "zircon_ZrHf": ["Zr", "Hf"], "tioxide_Ti": ["Ti"]}
+    ar = pd.read_csv(paths.NGCM_TABLE)
+    for c in ["TiO2", "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
+        ar[c] = pd.to_numeric(ar[c], errors="coerce")
+    ar["Ti"] = ar["TiO2"] * 1e4 * 0.5995
+    ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
+    sand = india("sandmata"); mang = india("mangalwar")
+    sand = india("sandmata"); mang = india("mangalwar")
+    NG = paths.NGSA
+    with open(NG, encoding="latin-1") as f:
+        H = list(csv.reader(f))[11]
+    cidx = {el: findcol(el) for el in ELEMS}
+    cidx = {k: v for k, v in cidx.items() if v is not None}
+    ordered = sorted(cidx.items(), key=lambda kv: kv[1]); use = [0] + [v for _, v in ordered]
+    ordered = sorted(cidx.items(), key=lambda kv: kv[1]); use = [0] + [v for _, v in ordered]
+    ng = pd.read_csv(NG, header=None, skiprows=12, usecols=use, encoding="latin-1", low_memory=False)
+    ng.columns = ["SITEID"] + [k for k, _ in ordered]
+    for c in ng.columns:
+        ng[c] = pd.to_numeric(ng[c], errors="coerce")
+    ng = ng.groupby("SITEID").median(numeric_only=True)
+    wapp = aus("wa_palaeoprot", "WA_PP", "WA_Palaeoproterozoic")
+    yiln = aus("yilgarn", "Y+N", "Youanmi+Narryer")
+    ngcm_all = pd.concat([sand, mang], ignore_index=True)
+    ngsa_all = pd.concat([wapp, yiln], ignore_index=True)
+    mu_in, sd_in = zscore(ngcm_all); mu_au, sd_au = zscore(ngsa_all)
+    mu_in, sd_in = zscore(ngcm_all); mu_au, sd_au = zscore(ngsa_all)
+    allsc = pd.concat([score(ngcm_all, mu_in, sd_in), score(ngsa_all, mu_au, sd_au)],
+                      ignore_index=True)
+    for name in FP:
+        allsc[f"top10_{name}"] = False
+        for dom, g in allsc.groupby("domain"):
+            thr = g[name].quantile(0.90)
+            allsc.loc[g.index[g[name] >= thr], f"top10_{name}"] = True
+    rp = pd.read_csv(f"{RES}/analogue_pairs.csv")
+    pno = {}
+    for f in json.load(open(f"{RES}/pair_catchments_india.geojson"))["features"]:
+        pno[f["properties"]["sid"]] = f["properties"]["pair_no"]
+    for f in json.load(open(f"{RES}/pair_catchments_australia.geojson"))["features"]:
+        pno[f["properties"]["sid"]] = f["properties"]["pair_no"]
+    allsc["pair_no"] = allsc.sid.map(pno).astype("Int64")
+    allsc.to_csv(f"{RES}/catchment_scores.csv", index=False)
+    print("wrote catchment_scores.csv:", len(allsc), "samples")
+    print(allsc.groupby(["survey", "domain"]).size())
+    robust = pd.concat([rp[rp.domain == d].sort_values(["mnn", "dist"],
+                        ascending=[False, True]).head(10)
+                        for d in ["Palaeoproterozoic", "Archaean"]])
+    s = allsc.set_index("sid")
+    expected = {"monazite_LREE": 0.696, "xenotime_HREE": 0.506,
+                "zircon_ZrHf": 0.313, "tioxide_Ti": -0.240}
+    print("\nverification vs pair_per_element_validation.csv (robust-20 Spearman rho):")
+    ok = True
+    for name in FP:
+        x = [s.loc[r.india_sid, name] for _, r in robust.iterrows()]
+        y = [s.loc[r.aus_sid, name] for _, r in robust.iterrows()]
+        rho = pd.Series(x).rank().corr(pd.Series(y).rank())
+        match = abs(rho - expected[name]) < 0.005
+        ok &= match
+        print(f"  {name:15} rho={rho:+.3f}  expected {expected[name]:+.3f}  {'OK' if match else 'MISMATCH'}")
+    print("VERIFICATION", "PASSED" if ok else "FAILED")
 
-# ---- verification against pair_validation.py (per-mineral rho, robust-20 pairs) ----
-robust = pd.concat([rp[rp.domain == d].sort_values(["mnn", "dist"],
-                    ascending=[False, True]).head(10)
-                    for d in ["Palaeoproterozoic", "Archaean"]])
-s = allsc.set_index("sid")
-expected = {"monazite_LREE": 0.696, "xenotime_HREE": 0.506,
-            "zircon_ZrHf": 0.313, "tioxide_Ti": -0.240}
-print("\nverification vs pair_per_element_validation.csv (robust-20 Spearman rho):")
-ok = True
-for name in FP:
-    x = [s.loc[r.india_sid, name] for _, r in robust.iterrows()]
-    y = [s.loc[r.aus_sid, name] for _, r in robust.iterrows()]
-    rho = pd.Series(x).rank().corr(pd.Series(y).rank())
-    match = abs(rho - expected[name]) < 0.005
-    ok &= match
-    print(f"  {name:15} rho={rho:+.3f}  expected {expected[name]:+.3f}  {'OK' if match else 'MISMATCH'}")
-print("VERIFICATION", "PASSED" if ok else "FAILED")
+if __name__ == "__main__":
+    main()

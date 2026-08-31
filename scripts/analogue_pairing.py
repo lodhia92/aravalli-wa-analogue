@@ -27,65 +27,30 @@ Repository: aravalli-wa-analogue. Run order is given in README.md; data sources 
 expected file locations are given in data/README.md.
 """
 import os, csv
+
 import numpy as np, pandas as pd
+
 import paths
 
-HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJ=os.path.dirname(HERE); RES=os.path.join(HERE,"results"); DR=os.path.join(RES,"drainage")
-IN_THR=50.0; AUS_THR=25.0   # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
-CI=dict(La=.237,Yb=.170,Sm=.148,Eu=.0580,Gd=.199)
-MATCH=["Th/Sc","La/Sc","Th/Co","EuEu","La/Yb_n","Nb/Y"]
-PATH=["Zr","Hf","Ti","Ce","Nd","Pr","Dy","P"]
+from aravalli_wa.composition import ratios
 
-def ratios(df):
-    o=pd.DataFrame(index=df.index)
-    o["Th/Sc"]=df.Th/df.Sc; o["La/Sc"]=df.La/df.Sc; o["Th/Co"]=df.Th/df.Co
-    o["EuEu"]=(df.Eu/CI["Eu"])/np.sqrt((df.Sm/CI["Sm"])*(df.Gd/CI["Gd"]))
-    o["La/Yb_n"]=(df.La/df.Yb)/(CI["La"]/CI["Yb"]); o["Nb/Y"]=df.Nb/df.Y
-    return o
-
-# ---------- India: NGCM table joined to drainage ----------
-ar=pd.read_csv(paths.NGCM_TABLE)
-for c in ["Th","Sc","Co","La","Eu","Sm","Gd","Yb","Nb","Y","TiO2","P2O5","Zr","Hf","Ce","Nd","Pr","Dy","LAT","LON"]:
-    ar[c]=pd.to_numeric(ar[c],errors="coerce")   # element cols are object (detection-limit strings)
-ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364   # oxide wt% -> element mg/kg
-ar["k"]=ar.LAT.round(4).astype(str)+"_"+ar.LON.round(4).astype(str)
 def india(name):
     d=pd.read_csv(os.path.join(DR,f"{name}_contained.csv")); d=d[d.pct_in_domain>=IN_THR]
     d["k"]=d.lat.round(4).astype(str)+"_"+d.lon.round(4).astype(str)
     m=ar[ar.k.isin(set(d.k))].copy(); m["sid"]=name+"_"+m.k; m["survey"]="NGCM"
     return m
-sand=india("sandmata"); mang=india("mangalwar")
 
-# ---------- Australia: NGSA, dedupe to one row per site (median) ----------
-NG=paths.NGSA
-with open(NG,encoding="latin-1") as f: H=list(csv.reader(f))[11]
 def col(el,method):
     for i,c in enumerate(H):
         if c.strip().startswith(f"{el} {method}"): return i
     return None
-ELEM=dict(Th=("ICP-MS",),Sc=("ICP-MS",),Nb=("ICP-MS",),Y=("ICP-MS",),La=("ICP-MS",),
-          Yb=("ICP-MS",),Ce=("ICP-MS",),Nd=("ICP-MS",),Sm=("ICP-MS",),Eu=("ICP-MS",),
-          Gd=("ICP-MS",),Dy=("ICP-MS",),Zr=("ICP-MS",),Hf=("ICP-MS",),Co=("ICP-MS",),
-          Pr=("ICP-MS",),Ti=("XRF",),P=("XRF",))
-cidx={el:col(el,m[0]) for el,m in ELEM.items()}
-cidx={k:v for k,v in cidx.items() if v is not None}
-ordered=sorted(cidx.items(),key=lambda kv:kv[1])   # pandas returns usecols in ascending file order
-use=[0]+[v for _,v in ordered]
-ng=pd.read_csv(NG,header=None,skiprows=12,usecols=use,encoding="latin-1",low_memory=False)
-ng.columns=["SITEID"]+[k for k,_ in ordered]
-for c in ng.columns: ng[c]=pd.to_numeric(ng[c],errors="coerce")
-ng=ng.groupby("SITEID").median(numeric_only=True).reset_index()   # one row per site
 
 def aus(path,label):
     d=pd.read_csv(path); d=d[d.pct_in_domain>=AUS_THR]
     ids=set(pd.to_numeric(d["id"],errors="coerce").dropna())
     m=ng[ng.SITEID.isin(ids)].copy(); m["sid"]=label+"_"+m.SITEID.astype(str); m["survey"]="NGSA"
     return m
-wapp=aus(os.path.join(DR,"wa_palaeoprot_contained.csv"),"WA_PP")
-yiln=aus(os.path.join(DR,"yilgarn_contained.csv"),"Y+N")
 
-# ---------- standardise within survey, match within age domain ----------
 def zlog(df,muSD=None):
     r=ratios(df).replace([np.inf,-np.inf],np.nan)
     x=np.log(r.where(r>0)).replace([np.inf,-np.inf],np.nan)
@@ -111,47 +76,93 @@ def pair(india_df,aus_df,domain):
         dd=np.sqrt(((Av-iv)**2).sum(1)); p.loc[n,"mnn"]=(zau.index[int(dd.argmin())]==row.aus_idx)
     return p,zin,zau
 
-# survey-wide standardisation pools (all drainage-selected catchments of each survey)
-ngcm_all=pd.concat([sand,mang]); ngsa_all=pd.concat([wapp,yiln])
-_,ngcm_muSD=zlog(ngcm_all); _,ngsa_muSD=zlog(ngsa_all)
-
-pp,zin_pp,zau_pp=pair(sand,wapp,"Palaeoproterozoic")
-ar_,zin_ar,zau_ar=pair(mang,yiln,"Archaean")
-allp=pd.concat([pp,ar_]).sort_values(["domain","dist"])
-allp.to_csv(os.path.join(RES,"candidate_pairs.csv"),index=False)
-
-# robust set: per domain take MNN first, then closest, cap ~10/domain (<=20 total)
 def robust(p,cap=10):
     p=p.sort_values(["mnn","dist"],ascending=[False,True])
     return p.head(cap)
-rob=pd.concat([robust(pp),robust(ar_)]).reset_index(drop=True)
-rob.to_csv(os.path.join(RES,"analogue_pairs.csv"),index=False)
-print("candidate pairs: Palaeoprot",len(pp),"(MNN",int(pp.mnn.sum()),") Archaean",len(ar_),"(MNN",int(ar_.mnn.sum()),")")
-print("robust pairs kept:",len(rob),"| median dist",round(rob.dist.median(),2))
-print(rob[["domain","india_sid","aus_sid","dist","mnn"]].to_string(index=False))
 
-# ---------- independent pathfinder validation on the robust pairs ----------
 def zpath(df,muSD):
     x=np.log(df[PATH].clip(lower=1e-9)); return (x-muSD[0])/muSD[1]
-pin_mu=(np.log(ngcm_all[PATH].clip(lower=1e-9)).mean(),np.log(ngcm_all[PATH].clip(lower=1e-9)).std(ddof=0))
-pau_mu=(np.log(ngsa_all[PATH].clip(lower=1e-9)).mean(),np.log(ngsa_all[PATH].clip(lower=1e-9)).std(ddof=0))
-# per-pair pathfinder composite = mean standardised pathfinder score (independent of MATCH ratios)
-xi,yi=[],[]
-for _,r in rob.iterrows():
-    di=ngcm_all[ngcm_all.sid==r.india_sid]; da=ngsa_all[ngsa_all.sid==r.aus_sid]
-    if len(di) and len(da):
-        xi.append(zpath(di,pin_mu)[PATH].mean(axis=1).values[0])
-        yi.append(zpath(da,pau_mu)[PATH].mean(axis=1).values[0])
-xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
-xi,yi=xi[ok],yi[ok]
+
 def spearman(a,b):
     ra=pd.Series(a).rank().values; rb=pd.Series(b).rank().values
     return float(np.corrcoef(ra,rb)[0,1])
-rho=spearman(xi,yi)
-rng=np.random.default_rng(0)
-null=[spearman(xi,rng.permutation(yi)) for _ in range(5000)]
-pval=(np.sum(np.abs(null)>=abs(rho))+1)/(len(null)+1)
-print("\nPATHFINDER validation (composite, n=%d pairs): Spearman rho=%.2f, perm p=%.3f"%(len(xi),rho,pval))
-pd.DataFrame({"india":list(rob.india_sid[:len(xi)]),"aus":list(rob.aus_sid[:len(xi)]),
-              "path_india":xi,"path_aus":yi}).to_csv(os.path.join(RES,"pairing_fingerprint_check.csv"),index=False)
-print("wrote analogue pairing csvs")
+
+def main():
+    global AUS_THR, B, Bc, CI, DR, ELEM, H, HERE, IN_THR, MATCH, NG, NPERM, PATH, PROJ, RES, SEED, _, ac, allp, ar, ar_, c, cidx, da, den, di, el, f, k, m, mang, ng, ngcm_all, ngcm_muSD, ngsa_all, ngsa_muSD, null, ok, ordered, pau_mu, pin_mu, pp, pval, r, ra, rb, rho, rng, rob, sand, use, v, wapp, xi, yi, yiln, zau_ar, zau_pp, zin_ar, zin_pp
+    HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    PROJ=os.path.dirname(HERE); RES=os.path.join(HERE,"results")
+    PROJ=os.path.dirname(HERE); RES=os.path.join(HERE,"results")
+    DR=os.path.join(RES,"drainage")
+    NPERM = 100000
+    SEED = 20260827
+    IN_THR=50.0; AUS_THR=25.0   # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
+    IN_THR=50.0; AUS_THR=25.0   # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
+    CI=dict(La=.237,Yb=.170,Sm=.148,Eu=.0580,Gd=.199)
+    MATCH=["Th/Sc","La/Sc","Th/Co","EuEu","La/Yb_n","Nb/Y"]
+    PATH=["Zr","Hf","Ti","Ce","Nd","Pr","Dy","P"]
+    ar=pd.read_csv(paths.NGCM_TABLE)
+    for c in ["Th","Sc","Co","La","Eu","Sm","Gd","Yb","Nb","Y","TiO2","P2O5","Zr","Hf","Ce","Nd","Pr","Dy","LAT","LON"]:
+        ar[c]=pd.to_numeric(ar[c],errors="coerce")   # element cols are object (detection-limit strings)
+    ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364   # oxide wt% -> element mg/kg
+    ar["Ti"]=ar["TiO2"]*1e4*0.5995; ar["P"]=ar["P2O5"]*1e4*0.4364   # oxide wt% -> element mg/kg
+    ar["k"]=ar.LAT.round(4).astype(str)+"_"+ar.LON.round(4).astype(str)
+    sand=india("sandmata"); mang=india("mangalwar")
+    sand=india("sandmata"); mang=india("mangalwar")
+    NG=paths.NGSA
+    with open(NG,encoding="latin-1") as f: H=list(csv.reader(f))[11]
+    ELEM=dict(Th=("ICP-MS",),Sc=("ICP-MS",),Nb=("ICP-MS",),Y=("ICP-MS",),La=("ICP-MS",),
+              Yb=("ICP-MS",),Ce=("ICP-MS",),Nd=("ICP-MS",),Sm=("ICP-MS",),Eu=("ICP-MS",),
+              Gd=("ICP-MS",),Dy=("ICP-MS",),Zr=("ICP-MS",),Hf=("ICP-MS",),Co=("ICP-MS",),
+              Pr=("ICP-MS",),Ti=("XRF",),P=("XRF",))
+    cidx={el:col(el,m[0]) for el,m in ELEM.items()}
+    cidx={k:v for k,v in cidx.items() if v is not None}
+    ordered=sorted(cidx.items(),key=lambda kv:kv[1])   # pandas returns usecols in ascending file order
+    use=[0]+[v for _,v in ordered]
+    ng=pd.read_csv(NG,header=None,skiprows=12,usecols=use,encoding="latin-1",low_memory=False)
+    ng.columns=["SITEID"]+[k for k,_ in ordered]
+    for c in ng.columns: ng[c]=pd.to_numeric(ng[c],errors="coerce")
+    ng=ng.groupby("SITEID").median(numeric_only=True).reset_index()   # one row per site
+    wapp=aus(os.path.join(DR,"wa_palaeoprot_contained.csv"),"WA_PP")
+    yiln=aus(os.path.join(DR,"yilgarn_contained.csv"),"Y+N")
+    ngcm_all=pd.concat([sand,mang]); ngsa_all=pd.concat([wapp,yiln])
+    ngcm_all=pd.concat([sand,mang]); ngsa_all=pd.concat([wapp,yiln])
+    _,ngcm_muSD=zlog(ngcm_all); _,ngsa_muSD=zlog(ngsa_all)
+    _,ngcm_muSD=zlog(ngcm_all); _,ngsa_muSD=zlog(ngsa_all)
+    pp,zin_pp,zau_pp=pair(sand,wapp,"Palaeoproterozoic")
+    ar_,zin_ar,zau_ar=pair(mang,yiln,"Archaean")
+    allp=pd.concat([pp,ar_]).sort_values(["domain","dist"])
+    allp.to_csv(os.path.join(RES,"candidate_pairs.csv"),index=False)
+    rob=pd.concat([robust(pp),robust(ar_)]).reset_index(drop=True)
+    rob.to_csv(os.path.join(RES,"analogue_pairs.csv"),index=False)
+    print("candidate pairs: Palaeoprot",len(pp),"(MNN",int(pp.mnn.sum()),") Archaean",len(ar_),"(MNN",int(ar_.mnn.sum()),")")
+    print("robust pairs kept:",len(rob),"| median dist",round(rob.dist.median(),2))
+    print(rob[["domain","india_sid","aus_sid","dist","mnn"]].to_string(index=False))
+    pin_mu=(np.log(ngcm_all[PATH].clip(lower=1e-9)).mean(),np.log(ngcm_all[PATH].clip(lower=1e-9)).std(ddof=0))
+    pau_mu=(np.log(ngsa_all[PATH].clip(lower=1e-9)).mean(),np.log(ngsa_all[PATH].clip(lower=1e-9)).std(ddof=0))
+    xi,yi=[],[]
+    for _,r in rob.iterrows():
+        di=ngcm_all[ngcm_all.sid==r.india_sid]; da=ngsa_all[ngsa_all.sid==r.aus_sid]
+        if len(di) and len(da):
+            xi.append(zpath(di,pin_mu)[PATH].mean(axis=1).values[0])
+            yi.append(zpath(da,pau_mu)[PATH].mean(axis=1).values[0])
+    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
+    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
+    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
+    xi,yi=xi[ok],yi[ok]
+    rho=spearman(xi,yi)
+    rng=np.random.default_rng(SEED)
+    ra=pd.Series(xi).rank().values; rb=pd.Series(yi).rank().values
+    ra=pd.Series(xi).rank().values; rb=pd.Series(yi).rank().values
+    B=rb[rng.random((NPERM,len(rb))).argsort(axis=1)]
+    Bc=B-B.mean(1,keepdims=True); ac=ra-ra.mean()
+    Bc=B-B.mean(1,keepdims=True); ac=ra-ra.mean()
+    den=np.sqrt((Bc**2).sum(1)*(ac**2).sum())
+    null=np.abs(np.where(den>0,(Bc@ac)/den,np.nan))
+    pval=(np.sum(null>=abs(rho))+1)/(NPERM+1)
+    print("\nPATHFINDER validation (composite, n=%d pairs): Spearman rho=%.2f, perm p=%.3f"%(len(xi),rho,pval))
+    pd.DataFrame({"india":list(rob.india_sid[:len(xi)]),"aus":list(rob.aus_sid[:len(xi)]),
+                  "path_india":xi,"path_aus":yi}).to_csv(os.path.join(RES,"pairing_fingerprint_check.csv"),index=False)
+    print("wrote analogue pairing csvs")
+
+if __name__ == "__main__":
+    main()

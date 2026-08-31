@@ -38,6 +38,8 @@ import os
 import numpy as np
 import pandas as pd
 import paths
+from aravalli_wa.composition import logr, ratios
+from aravalli_wa.stats import avg_rank, bh, corr_rows
 
 csv.field_size_limit(10 ** 7)
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -56,33 +58,6 @@ NPERM, NDRAW, KPUB = 100000, 10000, 10
 SEED = 20260827
 rng = np.random.default_rng(SEED)
 _BANK = {}
-
-
-def avg_rank(A):
-    A = np.atleast_2d(A)
-    m, n = A.shape
-    order = np.argsort(A, axis=1, kind="mergesort")
-    ranks = np.empty((m, n), float)
-    ranks[np.arange(m)[:, None], order] = np.arange(1, n + 1)[None, :]
-    S = np.take_along_axis(A, order, axis=1)
-    for i in range(m):
-        j = 0
-        while j < n:
-            k = j
-            while k + 1 < n and S[i, k + 1] == S[i, j]:
-                k += 1
-            if k > j:
-                ranks[i, order[i, j:k + 1]] = (j + k + 2) / 2.0
-            j = k + 1
-    return ranks
-
-
-def corr_rows(Z, z):
-    Zc = Z - Z.mean(1, keepdims=True)
-    zc = z - z.mean()
-    den = np.sqrt((Zc ** 2).sum(1) * (zc ** 2).sum())
-    with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(den > 0, (Zc @ zc) / den, np.nan)
 
 
 def bank(n):
@@ -104,18 +79,6 @@ def spearman_perm(a, b, blocks=None):
             P[:, pos] = pos[rng.random((NPERM, len(pos))).argsort(axis=1)]
     null = np.abs(corr_rows(rb[P], ra))
     return rho, (np.sum(null >= abs(rho)) + 1) / (NPERM + 1)
-
-
-def bh(ps):
-    ps = np.asarray(ps, float)
-    o = np.argsort(ps)
-    m = len(ps)
-    q = np.empty(m)
-    prev = 1.0
-    for rank, idx in enumerate(o[::-1]):
-        prev = min(prev, ps[idx] * m / (m - rank))
-        q[idx] = prev
-    return q
 
 
 def hungarian(cost):
@@ -159,22 +122,6 @@ def hungarian(cost):
         if p[j] > 0:
             out[p[j] - 1] = j - 1
     return out
-
-
-def ratios(df):
-    o = pd.DataFrame(index=df.index)
-    o["Th/Sc"] = df.Th / df.Sc
-    o["La/Sc"] = df.La / df.Sc
-    o["Th/Co"] = df.Th / df.Co
-    o["EuEu"] = (df.Eu / CI["Eu"]) / np.sqrt((df.Sm / CI["Sm"]) * (df.Gd / CI["Gd"]))
-    o["La/Yb_n"] = (df.La / df.Yb) / (CI["La"] / CI["Yb"])
-    o["Nb/Y"] = df.Nb / df.Y
-    return o
-
-
-def logr(df):
-    r = ratios(df).replace([np.inf, -np.inf], np.nan)
-    return np.log(r.where(r > 0)).replace([np.inf, -np.inf], np.nan)
 
 
 def prepare():

@@ -23,10 +23,12 @@ Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 Repository: aravalli-wa-analogue. Run order is given in README.md; data sources and
 expected file locations are given in data/README.md.
 """
-import argparse, glob, os, re, subprocess, sys, json, warnings
+import argparse, glob, os, re, subprocess, sys, json, warnings, zipfile
 import pandas as pd
 import paths
 warnings.filterwarnings("ignore")
+
+SKIPPED = []   # workbooks that could not be read, reported at the end
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(HERE)
@@ -40,8 +42,12 @@ def load_state(state_dir):
         try:
             df = pd.read_excel(f, sheet_name="Samples", header=None, skiprows=3,
                                usecols=[6, 7], names=["lat", "lon"], engine="openpyxl")
-        except Exception as ex:
-            print("  ERR", os.path.basename(f), ex); continue
+        except (ValueError, KeyError, OSError, zipfile.BadZipFile) as ex:
+            # A workbook openpyxl cannot parse, or one with no "Samples" sheet. Named and
+            # counted so that a survey file is never dropped from the coverage silently.
+            SKIPPED.append(os.path.basename(f))
+            print(f"  SKIPPED {os.path.basename(f)}: {type(ex).__name__}: {ex}")
+            continue
         df["lat"] = pd.to_numeric(df.lat, errors="coerce")
         df["lon"] = pd.to_numeric(df.lon, errors="coerce")
         df = df.dropna()

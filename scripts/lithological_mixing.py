@@ -52,9 +52,8 @@ import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(HERE, "scripts"))
-import matching_sensitivity as core          # noqa: E402  matching, rank statistics, BH correction
-import containment_sensitivity as cont           # noqa: E402  loader with the published thresholds
+import matching_sensitivity as core  # matching, rank statistics, BH correction
+import containment_sensitivity as cont   # loader with the published thresholds
 
 RES = os.path.join(HERE, "results")
 DOMS, LAB = core.DOMS, core.LAB

@@ -24,6 +24,7 @@ import csv, os
 import numpy as np
 import pandas as pd
 import paths
+from aravalli_wa.stats import perm_p
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
@@ -51,30 +52,6 @@ def spearman(x, y):
     xr = xr - xr.mean(); yr = yr - yr.mean()
     d = np.sqrt((xr ** 2).sum() * (yr ** 2).sum())
     return float((xr * yr).sum() / d) if d > 0 else np.nan
-
-
-def perm_p(x, y, rho, n=NPERM, seed=20260827):
-    """Two-sided permutation probability, vectorised in blocks.
-
-    100 000 relabellings and seed 20260827, matching scripts/fingerprint_transfer.py, so that every
-    probability reported in this study comes from one convention.
-    """
-    rng = np.random.default_rng(seed)
-    xr = pd.Series(x).rank().values
-    yr = pd.Series(y).rank().values
-    xr = xr - xr.mean()
-    sx = np.sqrt((xr ** 2).sum())
-    hits, done = 0, 0
-    while done < n:
-        m = min(20000, n - done)
-        Y = yr[rng.random((m, len(yr))).argsort(axis=1)]
-        Y = Y - Y.mean(1, keepdims=True)
-        den = sx * np.sqrt((Y ** 2).sum(1))
-        with np.errstate(invalid="ignore", divide="ignore"):
-            null = np.abs(np.where(den > 0, (Y @ xr) / den, np.nan))
-        hits += int(np.sum(null >= abs(rho)))
-        done += m
-    return (hits + 1) / (n + 1)
 
 
 def load_ngsa():
