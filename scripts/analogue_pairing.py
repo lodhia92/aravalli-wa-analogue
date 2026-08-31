@@ -82,7 +82,12 @@ def robust(p,cap=10):
     return p.head(cap)
 
 def zpath(df,muSD):
-    x=np.log(df[PATH].clip(lower=1e-9)); return (x-muSD[0])/muSD[1]
+    """Standardised log pathfinder concentrations.
+
+    Values at or below zero become NaN rather than a substitute concentration, which is the
+    study's treatment of values below detection and values not reported.
+    """
+    x=np.log(df[PATH].where(df[PATH]>0)); return (x-muSD[0])/muSD[1]
 
 def spearman(a,b):
     ra=pd.Series(a).rank().values; rb=pd.Series(b).rank().values
@@ -132,16 +137,25 @@ def main():
     print("candidate pairs: Palaeoprot",len(pp),"(MNN",int(pp.mnn.sum()),") Archaean",len(ar_),"(MNN",int(ar_.mnn.sum()),")")
     print("robust pairs kept:",len(rob),"| median dist",round(rob.dist.median(),2))
     print(rob[["domain","india_sid","aus_sid","dist","mnn"]].to_string(index=False))
-    pin_mu=(np.log(ngcm_all[PATH].clip(lower=1e-9)).mean(),np.log(ngcm_all[PATH].clip(lower=1e-9)).std(ddof=0))
-    pau_mu=(np.log(ngsa_all[PATH].clip(lower=1e-9)).mean(),np.log(ngsa_all[PATH].clip(lower=1e-9)).std(ddof=0))
-    xi,yi=[],[]
+    lin=np.log(ngcm_all[PATH].where(ngcm_all[PATH]>0))
+    lau=np.log(ngsa_all[PATH].where(ngsa_all[PATH]>0))
+    pin_mu=(lin.mean(), lin.std(ddof=0))
+    pau_mu=(lau.mean(), lau.std(ddof=0))
+    # Each kept pair carries its own identifiers, so a pair skipped for a missing sample or
+    # dropped for a non-finite score cannot shift the identifiers out of step with the values.
+    kept=[]
     for _,r in rob.iterrows():
         di=ngcm_all[ngcm_all.sid==r.india_sid]; da=ngsa_all[ngsa_all.sid==r.aus_sid]
-        if len(di) and len(da):
-            xi.append(zpath(di,pin_mu)[PATH].mean(axis=1).values[0])
-            yi.append(zpath(da,pau_mu)[PATH].mean(axis=1).values[0])
-    xi=np.array(xi); yi=np.array(yi); ok=np.isfinite(xi)&np.isfinite(yi)
-    xi,yi=xi[ok],yi[ok]
+        if len(di)!=1 or len(da)!=1:
+            print(f"  pair skipped, sample id matched {len(di)} Indian and {len(da)} Australian "
+                  f"rows (expected one each): {r.india_sid} / {r.aus_sid}")
+            continue
+        kept.append((r.india_sid, r.aus_sid,
+                     zpath(di,pin_mu)[PATH].mean(axis=1).values[0],
+                     zpath(da,pau_mu)[PATH].mean(axis=1).values[0]))
+    kept=[k for k in kept if np.isfinite(k[2]) and np.isfinite(k[3])]
+    india_sids=[k[0] for k in kept]; aus_sids=[k[1] for k in kept]
+    xi=np.array([k[2] for k in kept]); yi=np.array([k[3] for k in kept])
     rho=spearman(xi,yi)
     rng=np.random.default_rng(SEED)
     ra=pd.Series(xi).rank().values; rb=pd.Series(yi).rank().values
@@ -151,7 +165,7 @@ def main():
     null=np.abs(np.where(den>0,(Bc@ac)/den,np.nan))
     pval=(np.sum(null>=abs(rho))+1)/(NPERM+1)
     print("\nPATHFINDER validation (composite, n=%d pairs): Spearman rho=%.2f, perm p=%.3f"%(len(xi),rho,pval))
-    pd.DataFrame({"india":list(rob.india_sid[:len(xi)]),"aus":list(rob.aus_sid[:len(xi)]),
+    pd.DataFrame({"india":india_sids,"aus":aus_sids,
                   "path_india":xi,"path_aus":yi}).to_csv(os.path.join(RES,"pairing_fingerprint_check.csv"),index=False)
     print("wrote analogue pairing csvs")
 
