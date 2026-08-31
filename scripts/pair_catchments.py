@@ -1,6 +1,10 @@
 """Build upstream catchment polygons for the 20 robust analogue-pair samples (one side per run).
 Traces HydroBASINS L12 upstream (NEXT_DOWN) from each sample's basin and unions the basin polygons.
-Usage: python pair_catchments.py --side india|australia
+
+    python pair_catchments.py --side india
+    python pair_catchments.py --side australia
+
+Output: results/pair_catchments_india.geojson, results/pair_catchments_australia.geojson
 
 Author: Bhavik Harish Lodhia, Curtin University
 """

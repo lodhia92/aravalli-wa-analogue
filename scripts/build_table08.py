@@ -5,6 +5,10 @@ then verify every emitted cell back against those files. Writes results/table08_
 An asterisk marks a fingerprint whose Benjamini-Hochberg q-value is below 0.05 within that variant.
 The two control rows carry the mean and the 95th percentile of 10 000 random-pairing draws.
 
+Output: results/table08_cells.tsv
+
+Requires results/matching_variants.csv, so run matching_sensitivity.py --part variants first.
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import os

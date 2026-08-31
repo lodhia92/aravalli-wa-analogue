@@ -39,6 +39,9 @@ Outputs: results/lithological_mixing.csv
          results/lithological_mixing_scores.csv
          results/lithological_mixing_partial.csv
 
+    python lithological_mixing.py --part scores
+    python lithological_mixing.py --part confound
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse

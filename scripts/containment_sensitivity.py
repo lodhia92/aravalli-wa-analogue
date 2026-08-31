@@ -37,6 +37,10 @@ Outputs: results/containment_grid.csv
          results/containment_vs_scores.csv
          results/containment_covariate.csv
 
+    python containment_sensitivity.py --part grid
+    python containment_sensitivity.py --part confound
+    python containment_sensitivity.py --part power
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import argparse

@@ -22,6 +22,10 @@ Matching ratios (weathering-robust source-rock discriminators; McLennan/Taylor):
   Th/Sc, La/Sc, Th/Co, Eu/Eu*, (La/Yb)n, Nb/Y.
 Chondrite (McDonough & Sun 1995, CI): La .237 Yb .170 Sm .148 Eu .0580 Gd .199 ppm.
 
+Output: results/analogue_pairs.csv          the twenty analogue pairs
+        results/candidate_pairs.csv        every candidate pair with its match distance
+        results/pairing_fingerprint_check.csv  per-pair composite pathfinder scores
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv

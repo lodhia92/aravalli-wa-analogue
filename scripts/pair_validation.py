@@ -5,6 +5,9 @@
      relaxed Australian drainage thresholds (25/15/10%), to show whether the trend strengthens with n.
  Matching is unchanged from analogue_pairing.py (six within-survey-standardised provenance ratios).
 
+Output: results/pair_per_element_validation.csv   per element and per fingerprint
+        results/pair_composite_scaling.csv        the composite as the pair set grows
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import os, csv, numpy as np, pandas as pd

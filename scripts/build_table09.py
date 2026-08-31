@@ -2,6 +2,8 @@
 alternative_fingerprints.py result files,
 then verify every emitted cell back against them. Writes results/table09_cells.tsv.
 
+Output: results/table09_cells.tsv
+
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
