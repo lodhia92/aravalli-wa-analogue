@@ -333,7 +333,9 @@ def main():
     for dom in DOMAINS:
         g = ind[ind.domain == dom]
         pub = int(g[f"top10_{FP}"].sum())
-        mine = int(thr[(thr.domain == dom) & (thr.rule.str.startswith("Top 10"))].n_sites.iloc[0])
+        top10 = thr[(thr.domain == dom) & (thr.rule.str.startswith("Top 10"))]
+        assert len(top10) == 1, f"expected one top-decile row for {dom}, found {len(top10)}"
+        mine = int(top10.n_sites.iloc[0])
         assert pub == mine, f"{dom}: published flag {pub} != recomputed {mine}"
     print("\npublished top-decile flags reproduced exactly")
     brk = []

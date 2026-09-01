@@ -21,6 +21,20 @@ def fmt(rho, q):
     return ("%.2f" % rho) + ("*" if q < 0.05 else "")
 
 
+def one(frame, what):
+    """The single row matching a lookup, or a failure that names the lookup."""
+    assert len(frame) == 1, f"expected one row for {what}, found {len(frame)}"
+    return frame.iloc[0]
+
+
+def constant(series, what):
+    """The value of a column that must be the same for every row of a group."""
+    assert series.nunique(dropna=False) == 1, (
+        f"{what} is not constant within the group: {sorted(set(series))}"
+    )
+    return series.iloc[0]
+
+
 def main():
     global \
         C, \
@@ -99,11 +113,11 @@ def main():
     for label, key in ROWS:
         sub = V[V.variant == key]
         assert len(sub) == 5, (key, len(sub))
-        n = int(sub.n.iloc[0])
-        shared = int(sub.shared_with_published.iloc[0])
+        n = int(constant(sub.n, f"pair count for {key}"))
+        shared = int(constant(sub.shared_with_published, f"shared count for {key}"))
         cells = []
         for m in COLS:
-            r = sub[sub.mineral == m].iloc[0]
+            r = one(sub[sub.mineral == m], f"{key} / {m}")
             cells.append(fmt(r.rho, r.q))
         out.append([label, str(n), str(shared)] + cells)
     for stat, col in [
@@ -112,7 +126,7 @@ def main():
     ]:
         cells = []
         for m in COLS:
-            r = C[C.mineral == m].iloc[0]
+            r = one(C[C.mineral == m], f"random control / {m}")
             cells.append("%.2f" % r[col])
         out.append([stat, "20", ""] + cells)
     hdr = [
@@ -135,20 +149,20 @@ def main():
         if label.startswith("Random"):
             col = "rho_random_mean" if "mean" in label else "rho_random_p95"
             for j, m in enumerate(COLS):
-                want = "%.2f" % float(C.loc[C.mineral == m, col].iloc[0])
+                want = "%.2f" % float(one(C.loc[C.mineral == m, col], f"{col} / {m}"))
                 if row[3 + j] != want:
                     bad += 1
                     print("MISMATCH", label, m, row[3 + j], want)
             continue
         key = dict(ROWS)[label]
         sub = V[V.variant == key]
-        if row[1] != str(int(sub.n.iloc[0])) or row[2] != str(
-            int(sub.shared_with_published.iloc[0])
+        if row[1] != str(int(constant(sub.n, f"pair count for {key}"))) or row[2] != str(
+            int(constant(sub.shared_with_published, f"shared count for {key}"))
         ):
             bad += 1
             print("MISMATCH n/shared", label)
         for j, m in enumerate(COLS):
-            r = sub[sub.mineral == m].iloc[0]
+            r = one(sub[sub.mineral == m], f"{key} / {m}")
             want = ("%.2f" % r.rho) + ("*" if r.q < 0.05 else "")
             if row[3 + j] != want:
                 bad += 1

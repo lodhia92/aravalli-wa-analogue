@@ -79,6 +79,9 @@ def mixing_table():
         p = sub.area_frac.values
         p = p / p.sum()
         basin = sub.loc[sub.TECTSETTIN.astype(str).str.lower() == "basin", "area_frac"].sum()
+        assert sub.domain.nunique() == 1 and sub.pair_no.nunique() == 1, (
+            f"catchment {sid} carries more than one domain or pair number"
+        )
         rows.append(
             dict(
                 sid=sid,
