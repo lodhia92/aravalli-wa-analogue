@@ -48,15 +48,16 @@ import csv
 import math
 import os
 
+import matching_sensitivity as core  # matching, statistics, BH correction
 import numpy as np
 import pandas as pd
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import matching_sensitivity as core  # matching, statistics, BH correction
-from aravalli_wa.stats import avg_rank, bh, corr_rows
-from aravalli_wa.composition import logr
 import paths
+from aravalli_wa.composition import logr
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.stats import avg_rank, bh, corr_rows
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")

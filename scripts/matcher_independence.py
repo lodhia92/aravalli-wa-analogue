@@ -30,14 +30,21 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, csv
+import csv
+import os
 
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 
 import paths
-
+from aravalli_wa.constants import (
+    AL_MASS_FRACTION_OF_AL2O3,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 from aravalli_wa.stats import zscore_elem
-from aravalli_wa.constants import AL_MASS_FRACTION_OF_AL2O3, P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+
 
 def ratios(df):
     o = pd.DataFrame(index=df.index)

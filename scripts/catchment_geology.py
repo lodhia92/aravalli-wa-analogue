@@ -15,10 +15,14 @@ Run:    python scripts/catchment_geology.py --start 1 --end 20
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import argparse, json, os
+import argparse
+import json
+import os
+
 import numpy as np
 import pandas as pd
 import shapefile
+
 import paths
 from aravalli_wa.geometry import geom_to_path, shape_to_path
 

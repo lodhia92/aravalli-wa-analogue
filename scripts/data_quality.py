@@ -11,12 +11,14 @@ Outputs
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import csv, os
+import csv
+import os
 
 import pandas as pd
 
 import paths
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+
 
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))

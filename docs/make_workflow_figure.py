@@ -8,9 +8,10 @@ text to remain legible at print size.
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 # ----------------------------------------------------------------------------------
 # content

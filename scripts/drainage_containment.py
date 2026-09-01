@@ -20,12 +20,16 @@ that catchment inside the domain (pct_in_domain); filter by threshold afterwards
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import argparse, json, os
+import argparse
+import json
+import os
+
 import pandas as pd
 import shapefile
-from shapely.geometry import shape as shp, Point
-from shapely.strtree import STRtree
+from shapely.geometry import Point
+from shapely.geometry import shape as shp
 from shapely.prepared import prep
+from shapely.strtree import STRtree
 
 
 def load_basins(path, region):

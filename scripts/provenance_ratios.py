@@ -15,13 +15,14 @@ Output: results/provenance_ratio_values.csv, results/provenance_summary.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, csv
+import csv
+import os
 
 import numpy as np
-
 import pandas as pd
 
 import paths
+
 
 def ratios(df):
     out = pd.DataFrame(index=df.index)

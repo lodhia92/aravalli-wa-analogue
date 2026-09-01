@@ -36,19 +36,16 @@ Run
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import csv
-
 import os
 
 import numpy as np
-
 import pandas as pd
 
 import paths
-
 from aravalli_wa.composition import logr
-
-from aravalli_wa.stats import avg_rank, bh, corr_rows
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.stats import avg_rank, bh, corr_rows
+
 
 def spearman_perm(a, b):
     ra, rb = avg_rank(a)[0], avg_rank(b)[0]

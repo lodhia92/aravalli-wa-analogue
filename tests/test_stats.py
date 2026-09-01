@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from scipy.stats import spearmanr
 
-from aravalli_wa.stats import avg_rank, bh, corr_rows, perm_p, spearman_perm, zscore_elem
+from aravalli_wa.stats import avg_rank, bh, corr_rows, perm_p, spearman_perm
 
 
 def spearman(a, b):

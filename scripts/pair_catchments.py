@@ -8,18 +8,27 @@ Output: results/pair_catchments_india.geojson, results/pair_catchments_australia
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import argparse, json, os
-import pandas as pd, shapefile
-from shapely.geometry import shape as shp, Point, mapping
+import argparse
+import json
+import os
+
+import pandas as pd
+import shapefile
+from shapely.geometry import Point, mapping
+from shapely.geometry import shape as shp
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
+
 import paths
+
 HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); PROJ=os.path.dirname(HERE)
 RES=f"{HERE}/results"
 
 def load_basins(path,region):
     r=shapefile.Reader(path); fl=[f[0] for f in r.fields[1:]]
-    iId,iND,iSub=fl.index("HYBAS_ID"),fl.index("NEXT_DOWN"),fl.index("SUB_AREA")
+    # This loader returns basin topology only. SUB_AREA is located but not read; the
+    # loader in drainage_containment.py is the one that sums it to weight catchment area.
+    iId,iND,iSub=fl.index("HYBAS_ID"),fl.index("NEXT_DOWN"),fl.index("SUB_AREA")  # noqa: F841
     info,geoms={},{}; x0,y0,x1,y1=region
     for sr in r.iterShapeRecords():
         b=sr.shape.bbox

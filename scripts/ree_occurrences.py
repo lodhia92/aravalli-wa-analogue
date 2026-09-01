@@ -23,8 +23,12 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import csv, json, os
+import csv
+import json
+import os
+
 import numpy as np
+
 import paths
 from aravalli_wa.geometry import geom_to_path
 

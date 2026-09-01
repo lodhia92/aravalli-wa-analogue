@@ -15,6 +15,7 @@ import os
 
 import pandas as pd
 
+
 def fmt(rho, q):
     return ("%.2f" % rho) + ("*" if q < 0.05 else "")
 

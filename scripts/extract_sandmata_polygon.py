@@ -33,15 +33,15 @@ Output: results/sandmata_complex.geojson
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, json
+import json
+import os
 
 import numpy as np
-
 from PIL import Image, ImageFilter
-
-from shapely.geometry import box as shbox, Polygon, MultiPolygon, Point
-
+from shapely.geometry import MultiPolygon, Point, Polygon
+from shapely.geometry import box as shbox
 from shapely.ops import unary_union
+
 
 def to_lonlat(x, y):
     return (d * x + e * y + f, a * x + b * y + c)

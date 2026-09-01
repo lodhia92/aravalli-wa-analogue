@@ -18,9 +18,12 @@ Run:    python scripts/mineralogical_validation.py
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import csv, os
+import csv
+import os
+
 import numpy as np
 import pandas as pd
+
 import paths
 from aravalli_wa.stats import perm_p
 

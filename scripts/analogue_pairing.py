@@ -28,14 +28,16 @@ Output: results/analogue_pairs.csv          the twenty analogue pairs
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, csv
+import csv
+import os
 
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 
 import paths
-
 from aravalli_wa.composition import ratios
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+
 
 def india(name):
     d=pd.read_csv(os.path.join(DR,f"{name}_contained.csv")); d=d[d.pct_in_domain>=IN_THR]

@@ -15,8 +15,9 @@ Author: Bhavik Harish Lodhia, Curtin University
 """
 
 import matching_sensitivity as core
-from aravalli_wa.stats import avg_rank, corr_rows
+
 import paths
+from aravalli_wa.stats import avg_rank, corr_rows
 
 EXPECT = {"monazite (Ce,Nd,Pr)": 0.696, "xenotime (Dy)": 0.506}
 TOL = 0.001

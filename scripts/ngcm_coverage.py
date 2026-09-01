@@ -21,9 +21,20 @@ regenerates figures/ngcm_coverage_updated.png.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import argparse, glob, os, re, subprocess, sys, json, warnings, zipfile
+import argparse
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+import warnings
+import zipfile
+
 import pandas as pd
+
 import paths
+
 warnings.filterwarnings("ignore")
 
 SKIPPED = []   # workbooks that could not be read, reported at the end
@@ -57,7 +68,7 @@ def load_state(state_dir):
 
 
 def combine():
-    from shapely.geometry import shape, Point
+    from shapely.geometry import Point, shape
     from shapely.prepared import prep
     frames = []
     for f in glob.glob(os.path.join(RES, "_cov_*.csv")):

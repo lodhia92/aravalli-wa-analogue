@@ -16,9 +16,11 @@ Run:    python scripts/terrane_attribution.py
 Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
+
 import numpy as np
 import pandas as pd
 import shapefile
+
 import paths
 from aravalli_wa.geometry import shape_to_path
 

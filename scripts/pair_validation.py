@@ -10,14 +10,17 @@ Output: results/pair_per_element_validation.csv   per element and per fingerprin
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, csv, numpy as np, pandas as pd
+import csv
+import os
+
+import numpy as np
+import pandas as pd
 
 import paths
-
 from aravalli_wa.composition import ratios
-
-from aravalli_wa.stats import zscore_elem
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.stats import zscore_elem
+
 
 def india(name):
     d=pd.read_csv(f"{DR}/{name}_contained.csv"); d=d[d.pct_in_domain>=IN_THR]

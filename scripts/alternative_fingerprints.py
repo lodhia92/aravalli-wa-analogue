@@ -7,13 +7,15 @@ Output: results/alternative_fingerprints.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import csv, os
+import csv
+import os
 
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 
 import paths
-
 from aravalli_wa.stats import perm_p
+
 
 def spearman(x,y):
     xr=pd.Series(x).rank().values; yr=pd.Series(y).rank().values
@@ -77,7 +79,7 @@ def main():
         els=[e for e in els if e in cidx]
         if not els: continue
         pcol="%s (pmo)"%stem
-        if pcol not in j.columns: 
+        if pcol not in j.columns:
             print("no HMMA column for",stem); continue
         j["_s"]=j[els].mean(axis=1)
         for scale,d in [("pool (n=85)",j),("pairs (n=20)",j[j.is_pair])]:

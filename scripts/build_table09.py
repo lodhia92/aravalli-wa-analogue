@@ -10,6 +10,7 @@ import os
 
 import pandas as pd
 
+
 def get(src, key, scale):
     d = A15 if src == "a15" else A8
     col = "fingerprint"

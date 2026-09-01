@@ -30,12 +30,13 @@ Author: Bhavik Harish Lodhia, Curtin University
 """
 import os
 
+import containment_sensitivity as cont
+import matching_sensitivity as core
 import pandas as pd
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import matching_sensitivity as core
 from aravalli_wa.stats import bh
-import containment_sensitivity as cont
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(HERE, "results")
 
 NEW = {

@@ -18,9 +18,16 @@ robust-20 pairs from the exported scores.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
-import os, csv, numpy as np, pandas as pd
+import csv
+import json
+import os
+
+import numpy as np
+import pandas as pd
 
 import paths
+from aravalli_wa.constants import TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+
 
 def india(name):
     d = pd.read_csv(f"{DR}/{name}_contained.csv"); d = d[d.pct_in_domain >= IN_THR]
@@ -57,8 +64,6 @@ def score(df, mu, sd):
         out[name] = z[grp].mean(axis=1)
     return out
 
-import json
-from aravalli_wa.constants import TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 def main():
     global AU_THR, DR, ELEMS, FP, H, HERE, IN_THR, NG, PROJ, RES, _, allsc, ar, c, cidx, d, dom, el, expected, f, g, k, mang, match, mu_au, mu_in, name, ng, ngcm_all, ngsa_all, ok, ordered, pno, r, rho, robust, rp, s, sand, sd_au, sd_in, thr, use, v, wapp, x, y, yiln

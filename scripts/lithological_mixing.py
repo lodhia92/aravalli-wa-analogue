@@ -48,13 +48,14 @@ import argparse
 import json
 import os
 
+import containment_sensitivity as cont  # loader with the published thresholds
+import matching_sensitivity as core  # matching, rank statistics, BH correction
 import numpy as np
 import pandas as pd
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import matching_sensitivity as core  # matching, rank statistics, BH correction
 from aravalli_wa.stats import avg_rank, bh, corr_rows
-import containment_sensitivity as cont   # loader with the published thresholds
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 RES = os.path.join(HERE, "results")
 DOMS, LAB = core.DOMS, core.LAB
@@ -89,7 +90,9 @@ def selected(M):
     """Align the mixing measures to the twenty selected Australian pair members."""
     D = cont.build_D(cont.PUB_IN, cont.PUB_AU)
     sel = core.select(D, "published")
-    asid, ipos_all, apos_all = [], [], []
+    # Only the Australian identifiers are used below; the paired index positions that
+    # sel[dom] also yields are unpacked but not accumulated.
+    asid, ipos_all, apos_all = [], [], []  # noqa: F841
     for dom in DOMS:
         ipos, apos = sel[dom]
         asid.extend(D[dom]["asid"][apos])
