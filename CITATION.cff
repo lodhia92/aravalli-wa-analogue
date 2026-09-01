@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite both the software and the paper it accompanies."
+title: "Critical mineral pathfinder targeting in the Aravalli basement: analysis code"
+abstract: >-
+  Analysis code for the study that matches north-west Indian and Western Australian
+  stream-sediment catchments on weathering-robust provenance ratios, tests whether critical
+  mineral pathfinder element signatures transfer between the matched catchments, and scores the
+  Aravalli catchments with the signatures that transfer.
+type: software
+version: 1.0.0
+license: MIT
+authors:
+  - family-names: Lodhia
+    given-names: Bhavik Harish
+    affiliation: Curtin University
+    email: bhavik.lodhia@curtin.edu.au
+    # orcid: "https://orcid.org/0000-0000-0000-0000"   # add before release
+repository-code: "https://github.com/REPLACE-ME/aravalli-wa-analogue"
+keywords:
+  - geochemistry
+  - stream sediment
+  - critical minerals
+  - rare earth elements
+  - provenance
+  - Aravalli
+  - Yilgarn
+# Replace with the archived release DOI once the repository is deposited.
+doi: "10.5281/zenodo.REPLACE-ME"
+preferred-citation:
+  type: article
+  title: "REPLACE-ME: paper title as published"
+  authors:
+    - family-names: Lodhia
+      given-names: Bhavik Harish
+      affiliation: Curtin University
+  year: 2026
+  doi: "10.REPLACE-ME/paper-doi"

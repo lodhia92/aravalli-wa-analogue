@@ -1,0 +1,74 @@
+# Packaging and tooling for the Aravalli-Western Australia analogue study.
+#
+# The analysis scripts live in scripts/ and are run directly; scripts/aravalli_wa is the shared
+# package they import. Installing is optional - `python scripts/<name>.py` resolves the package
+# without it - but `pip install -e .` makes the package importable from anywhere, which is what
+# the test suite and the continuous integration run rely on.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aravalli-wa-analogue"
+version = "1.0.0"
+description = "Critical mineral pathfinder targeting in the Aravalli basement: analysis code"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Bhavik Harish Lodhia", email = "bhavik.lodhia@curtin.edu.au" }]
+keywords = ["geochemistry", "stream sediment", "critical minerals", "rare earth elements",
+            "provenance", "Aravalli", "Yilgarn", "Capricorn"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+
+# Lower bounds are the earliest versions the workflow is known to run on. The published results
+# were reproduced with numpy 2.2.6, pandas 2.3.3, shapely 2.1.2 and pyshp 3.1.6 on Python 3.10.
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "shapely>=2.0",
+    "pyshp>=2.3",
+    "openpyxl>=3.1",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+# scipy is used only to check the rank statistics against an independent implementation.
+dev = ["pytest>=7.4", "ruff>=0.6", "scipy>=1.10"]
+
+[project.urls]
+Repository = "https://github.com/REPLACE-ME/aravalli-wa-analogue"
+
+[tool.setuptools]
+package-dir = { "" = "scripts" }
+
+[tool.setuptools.packages.find]
+where = ["scripts"]
+include = ["aravalli_wa*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+# 100 matches the code as written: of 1,506 lines, the 95th percentile is 96 characters.
+line-length = 100
+extend-exclude = ["results", "data"]
+
+[tool.ruff.lint]
+# E4 import placement, E9 syntax and IO errors, F pyflakes, I import order, W whitespace.
+# E701 and E702 (several statements on one line) are deliberately NOT enforced: the dense
+# one-line style is this repository's existing convention and rewriting it would obscure the
+# real diff without changing what the code does.
+select = ["E4", "E9", "F", "I", "W"]
+# E401 (several imports on one line, "import os, csv") is this repository's own style throughout.
+# Enforcing it would rewrite every script's header for no gain in what the code does.
+ignore = ["E401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["aravalli_wa", "paths"]

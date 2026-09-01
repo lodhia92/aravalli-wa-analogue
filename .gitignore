@@ -1,4 +1,29 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Editors and notebooks
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Input data is never redistributed; see data/README.md for the sources and the expected layout.
 data/
+
+# Intermediate caches written beside the results. The published tables themselves are committed.
 results/_*
