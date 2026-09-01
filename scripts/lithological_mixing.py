@@ -100,9 +100,7 @@ def selected(M):
     """Align the mixing measures to the twenty selected Australian pair members."""
     D = cont.build_D(cont.PUB_IN, cont.PUB_AU)
     sel = core.select(D, "published")
-    # Only the Australian identifiers are used below; the paired index positions that
-    # sel[dom] also yields are unpacked but not accumulated.
-    asid, ipos_all, apos_all = [], [], []  # noqa: F841
+    asid = []
     for dom in DOMS:
         ipos, apos = sel[dom]
         asid.extend(D[dom]["asid"][apos])
