@@ -7,19 +7,13 @@ with the signatures that transfer.
 
 Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 
-## The workflow
-
-![Analysis workflow](docs/workflow.png)
-
-Each box carries a short code and the step it performs; the key gives the script that implements
-it and what that script produces. `docs/make_workflow_figure.py` regenerates the diagram, and is
-the only plotting code in the repository.
-
 ## What this repository contains
 
 Every analysis behind the published tables and the reported statistics, from the drainage
-selection through to the sensitivity tests. It does not contain the plotting code for the
-manuscript figures, and it does not redistribute any of the source datasets.
+selection through to the sensitivity tests. It contains no figure code: the manuscript figures
+are published with the paper and supplied to the journal separately. It does not redistribute
+any of the source datasets. The run order below gives each step, the script that performs it
+and what that script produces.
 
 ## Before you start
 

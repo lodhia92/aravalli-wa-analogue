@@ -12,12 +12,12 @@ results/_cov_<state>.csv) and then combines. Usage:
     # one call per state (each is quick):
     python ngcm_coverage.py --state "2. Rajasthan"
     ... (repeat for every state folder) ...
-    # then combine, recount domains, and regenerate the coverage figure:
+    # then combine and recount domains:
     python ngcm_coverage.py --combine
 
---combine writes results/ngcm_all_coverage.csv, prints per-state counts and the counts inside
-the Sandmata and Mangalwar domain polygons (so changes vs the last refresh are visible), and
-regenerates figures/ngcm_coverage_updated.png.
+--combine writes results/ngcm_all_coverage.csv and prints per-state counts and the counts
+inside the Sandmata and Mangalwar domain polygons, so changes against the last refresh are
+visible.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
@@ -27,7 +27,6 @@ import glob
 import json
 import os
 import re
-import subprocess
 import sys
 import warnings
 import zipfile
@@ -118,8 +117,7 @@ def combine():
     for st, g in A.groupby("state"):
         print(f"  {st:22s} n={len(g):6d}  Sandmata={cnt(g, sand):5d}  Mangalwar={cnt(g, mang):5d}")
     print("TOTAL in Sandmata:", cnt(A, sand), " in Mangalwar:", cnt(A, mang))
-    subprocess.run([sys.executable, os.path.join(HERE, "scripts", "plot_ngcm_coverage.py")])
-    print("Wrote results/ngcm_all_coverage.csv and figures/ngcm_coverage_updated.png")
+    print("Wrote results/ngcm_all_coverage.csv")
 
 
 def main():

@@ -142,7 +142,6 @@ def main():
     global \
         CI, \
         DR, \
-        FIG, \
         H, \
         HERE, \
         IN_THR, \
@@ -198,7 +197,6 @@ def main():
     PROJ = os.path.dirname(HERE)
     RES = f"{HERE}/results"
     DR = f"{RES}/drainage"
-    FIG = f"{HERE}/figures"
     IN_THR = 50.0
     CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
     MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
