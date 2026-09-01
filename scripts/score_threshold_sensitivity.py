@@ -40,6 +40,7 @@ Outputs: results/score_thresholds.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import os
 
 import numpy as np
@@ -49,6 +50,7 @@ NDRAW = 100_000
 
 LINK_KM = 10.0
 
+
 def haversine_matrix(lat, lon):
     la = np.radians(lat)
     lo = np.radians(lon)
@@ -56,6 +58,7 @@ def haversine_matrix(lat, lon):
     dlo = lo[:, None] - lo[None, :]
     a = np.sin(dla / 2) ** 2 + np.cos(la[:, None]) * np.cos(la[None, :]) * np.sin(dlo / 2) ** 2
     return 6371.0088 * 2 * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
+
 
 def single_linkage(lat, lon, km):
     """Union-find single-linkage clustering. Returns an integer label per site."""
@@ -80,11 +83,13 @@ def single_linkage(lat, lon, km):
     _, out = np.unique(lab, return_inverse=True)
     return out
 
+
 def n_areas(g, mask, km=LINK_KM):
     sel = g[mask]
     if len(sel) == 0:
         return 0
     return int(single_linkage(sel.lat.values, sel.lon.values, km).max() + 1)
+
 
 def rules(s):
     """Threshold rules -> cut value. Percentiles use the published convention exactly:
@@ -102,6 +107,7 @@ def rules(s):
         ("Tukey upper fence", q3 + 1.5 * (q3 - q1)),
     ]
 
+
 def gap_test(s, rng, ndraw=NDRAW):
     """Largest gap between consecutive order statistics in the upper quarter, against a
     parametric bootstrap under a normal fitted to the same data. Also returns where that gap
@@ -113,7 +119,7 @@ def gap_test(s, rng, ndraw=NDRAW):
     d = np.diff(x[lo:])
     j = int(d.argmax())
     obs = float(d[j])
-    at = float(x[lo + j])             # score just below the gap
+    at = float(x[lo + j])  # score just below the gap
     n_above = int((x > at).sum())
     mu, sd = x.mean(), x.std(ddof=1)
     null = np.empty(ndraw)
@@ -125,6 +131,7 @@ def gap_test(s, rng, ndraw=NDRAW):
         null[a:b] = np.diff(sim[:, lo:], axis=1).max(axis=1)
     p = (1 + (null >= obs).sum()) / (1 + ndraw)
     return obs, at, n_above, float(np.median(null)), float(p)
+
 
 def mixture_crossover(mu, sd, w):
     """Score at which the two mixture components have equal posterior weight, searched on a
@@ -143,6 +150,7 @@ def mixture_crossover(mu, sd, w):
     if not up:
         return float("nan")
     return float(g[up[-1]])
+
 
 def em2(x, rng, iters=500):
     """Two-component 1-D Gaussian mixture by EM. Returns BIC."""
@@ -166,14 +174,75 @@ def em2(x, rng, iters=500):
     k = 5
     return 2 * k * np.log(n) - 2 * ll, mu, sd, w
 
+
 def main():
-    global DOMAINS, DR, FP, FP_ALT, HERE, IN_THR, RES, SEED, bic1, bic2, bk, brk, c, cat, cut, cutp, d, dom, g, gap_at, gdom, gg, i, ind, lab, label, lb, ll1, m, med_null, mine, mu2, n_above_gap, n_above_xover, n_before, n_dom, name, nxt, obs, p, pool, pub, pub_areas, pub_catch, pub_mask, rng, rows, s, sc, sd2, sel, sel_catch, st, stab, sub, thr, v, w2, x, xover
+    global \
+        DOMAINS, \
+        DR, \
+        FP, \
+        FP_ALT, \
+        HERE, \
+        IN_THR, \
+        RES, \
+        SEED, \
+        bic1, \
+        bic2, \
+        bk, \
+        brk, \
+        c, \
+        cat, \
+        cut, \
+        cutp, \
+        d, \
+        dom, \
+        g, \
+        gap_at, \
+        gdom, \
+        gg, \
+        i, \
+        ind, \
+        lab, \
+        label, \
+        lb, \
+        ll1, \
+        m, \
+        med_null, \
+        mine, \
+        mu2, \
+        n_above_gap, \
+        n_above_xover, \
+        n_before, \
+        n_dom, \
+        name, \
+        nxt, \
+        obs, \
+        p, \
+        pool, \
+        pub, \
+        pub_areas, \
+        pub_catch, \
+        pub_mask, \
+        rng, \
+        rows, \
+        s, \
+        sc, \
+        sd2, \
+        sel, \
+        sel_catch, \
+        st, \
+        stab, \
+        sub, \
+        thr, \
+        v, \
+        w2, \
+        x, \
+        xover
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     RES = f"{HERE}/results"
     DR = f"{RES}/drainage"
     SEED = 20260827
-    FP = "monazite_LREE"          # the fingerprint carried forward; see Section 3.2
-    FP_ALT = "xenotime_HREE"      # shown in Figure 5b, not carried forward
+    FP = "monazite_LREE"  # the fingerprint carried forward; see Section 3.2
+    FP_ALT = "xenotime_HREE"  # shown in Figure 5b, not carried forward
     DOMAINS = ["Sandmata", "Mangalwar"]
     IN_THR = 50.0
     rng = np.random.default_rng(SEED)
@@ -186,7 +255,8 @@ def main():
         d = d[d.pct_in_domain >= IN_THR]
         d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
         g = ind[ind.domain == dom].merge(
-            d[["k", "catchment_km2"]].drop_duplicates("k"), on="k", how="left")
+            d[["k", "catchment_km2"]].drop_duplicates("k"), on="k", how="left"
+        )
         assert g.catchment_km2.isna().sum() == 0, f"{dom}: unmatched sites"
         lab = np.full(len(g), -1)
         nxt = 0
@@ -208,33 +278,50 @@ def main():
         g = ind[ind.domain == dom].reset_index(drop=True)
         s = g[FP]
         pub_mask = s >= s.quantile(0.90)
-        pub_areas = set(single_linkage(g.lat.values[pub_mask.values], g.lon.values[pub_mask.values],
-                                       LINK_KM)) if pub_mask.any() else set()
+        pub_areas = (
+            set(
+                single_linkage(
+                    g.lat.values[pub_mask.values], g.lon.values[pub_mask.values], LINK_KM
+                )
+            )
+            if pub_mask.any()
+            else set()
+        )
         pub_catch = set(g.catch_id[pub_mask])
 
         for label, cut in rules(s):
             m = s >= cut
-            rows.append(dict(
-                domain=dom, rule=label, cut=round(float(cut), 3),
-                n_sites=int(m.sum()),
-                pct_of_domain=round(100 * m.sum() / len(g), 1),
-                n_areas_10km=n_areas(g, m.values, 10.0),
-                n_areas_5km=n_areas(g, m.values, 5.0),
-                n_areas_20km=n_areas(g, m.values, 20.0),
-                n_catchments=int(g.catch_id[m].nunique()),
-                median_score=round(float(s[m].median()), 3),
-                min_score=round(float(s[m].min()), 3),
-            ))
+            rows.append(
+                dict(
+                    domain=dom,
+                    rule=label,
+                    cut=round(float(cut), 3),
+                    n_sites=int(m.sum()),
+                    pct_of_domain=round(100 * m.sum() / len(g), 1),
+                    n_areas_10km=n_areas(g, m.values, 10.0),
+                    n_areas_5km=n_areas(g, m.values, 5.0),
+                    n_areas_20km=n_areas(g, m.values, 20.0),
+                    n_catchments=int(g.catch_id[m].nunique()),
+                    median_score=round(float(s[m].median()), 3),
+                    min_score=round(float(s[m].min()), 3),
+                )
+            )
             # stability against the published decile, at catchment level
             sel_catch = set(g.catch_id[m])
-            stab.append(dict(
-                domain=dom, rule=label,
-                catchments_shared_with_decile=len(sel_catch & pub_catch),
-                catchments_new_vs_decile=len(sel_catch - pub_catch),
-                catchments_lost_vs_decile=len(pub_catch - sel_catch),
-                pct_sites_in_decile_catchments=round(
-                    100 * g.catch_id[m].isin(pub_catch).mean(), 1) if m.any() else np.nan,
-            ))
+            stab.append(
+                dict(
+                    domain=dom,
+                    rule=label,
+                    catchments_shared_with_decile=len(sel_catch & pub_catch),
+                    catchments_new_vs_decile=len(sel_catch - pub_catch),
+                    catchments_lost_vs_decile=len(pub_catch - sel_catch),
+                    pct_sites_in_decile_catchments=round(
+                        100 * g.catch_id[m].isin(pub_catch).mean(), 1
+                    )
+                    if m.any()
+                    else np.nan,
+                )
+            )
     thr = pd.DataFrame(rows)
     thr.to_csv(f"{RES}/score_thresholds.csv", index=False)
     st = pd.DataFrame(stab)
@@ -258,27 +345,32 @@ def main():
         bic2, mu2, sd2, w2 = em2(x, rng)
         xover = mixture_crossover(mu2, sd2, w2)
         n_above_xover = int((s >= xover).sum())
-        ll1 = (-0.5 * ((x - x.mean()) / x.std(ddof=1)) ** 2
-               - np.log(x.std(ddof=1) * np.sqrt(2 * np.pi))).sum()
+        ll1 = (
+            -0.5 * ((x - x.mean()) / x.std(ddof=1)) ** 2
+            - np.log(x.std(ddof=1) * np.sqrt(2 * np.pi))
+        ).sum()
         bic1 = 2 * 2 * np.log(len(x)) - 2 * ll1
-        brk.append(dict(
-            domain=dom, n=len(x),
-            largest_upper_gap=round(float(obs), 4),
-            gap_at_score=round(gap_at, 3),
-            sites_above_gap=n_above_gap,
-            median_gap_under_normal=round(med_null, 4),
-            gap_p=round(p, 5),
-            bic_1component=round(float(bic1), 1),
-            bic_2component=round(float(bic2), 1),
-            delta_bic=round(float(bic1 - bic2), 1),
-            mix_means=f"{mu2[0]:.2f}, {mu2[1]:.2f}",
-            mix_sds=f"{sd2[0]:.2f}, {sd2[1]:.2f}",
-            mix_weights=f"{w2[0]:.2f}, {w2[1]:.2f}",
-            mix_crossover=round(xover, 3),
-            sites_above_crossover=n_above_xover,
-            pct_above_crossover=round(100 * n_above_xover / len(x), 1),
-            skew=round(float(s.skew()), 2),
-        ))
+        brk.append(
+            dict(
+                domain=dom,
+                n=len(x),
+                largest_upper_gap=round(float(obs), 4),
+                gap_at_score=round(gap_at, 3),
+                sites_above_gap=n_above_gap,
+                median_gap_under_normal=round(med_null, 4),
+                gap_p=round(p, 5),
+                bic_1component=round(float(bic1), 1),
+                bic_2component=round(float(bic2), 1),
+                delta_bic=round(float(bic1 - bic2), 1),
+                mix_means=f"{mu2[0]:.2f}, {mu2[1]:.2f}",
+                mix_sds=f"{sd2[0]:.2f}, {sd2[1]:.2f}",
+                mix_weights=f"{w2[0]:.2f}, {w2[1]:.2f}",
+                mix_crossover=round(xover, 3),
+                sites_above_crossover=n_above_xover,
+                pct_above_crossover=round(100 * n_above_xover / len(x), 1),
+                skew=round(float(s.skew()), 2),
+            )
+        )
     bk = pd.DataFrame(brk)
     bk.to_csv(f"{RES}/score_break_tests.csv", index=False)
     print("\n--- break tests ---")
@@ -292,14 +384,16 @@ def main():
     print("per-domain split:", dict(pool[pool[f"top10_{FP}"]].domain.value_counts()))
     for dom in DOMAINS:
         n_dom = (pool.domain == dom).sum()
-        print("  %s: pooled selects %d of %d (%.1f per cent of the domain)"
-              % (dom, (sel.domain == dom).sum(), n_dom,
-                 100 * (sel.domain == dom).sum() / n_dom))
+        print(
+            "  %s: pooled selects %d of %d (%.1f per cent of the domain)"
+            % (dom, (sel.domain == dom).sum(), n_dom, 100 * (sel.domain == dom).sum() / n_dom)
+        )
     print("\n--- Figure 5b fingerprint, same rules, for reference ---")
     for dom in DOMAINS:
         g = ind[ind.domain == dom]
         s = g[FP_ALT]
         print(dom, ", ".join("%s n=%d" % (lb, int((s >= c).sum())) for lb, c in rules(s)))
+
 
 if __name__ == "__main__":
     main()

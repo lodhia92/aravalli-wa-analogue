@@ -11,6 +11,7 @@ Outputs
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -26,6 +27,7 @@ def india(name):
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     return ar[ar.k.isin(set(d.k))].copy()
 
+
 def findcol(el):
     for meth in ("ICP-MS", "XRF"):
         for i, c in enumerate(H):
@@ -33,15 +35,56 @@ def findcol(el):
                 return i, c.strip()
     return None, None
 
+
 def aus(path):
     d = pd.read_csv(path)
     d = d[d.pct_in_domain >= AUS_THR]
     ids = set(pd.to_numeric(d["id"], errors="coerce").dropna())
     return ngn[ngn.index.isin(ids)].copy(), cens_site[cens_site.index.isin(ids)].copy()
 
+
 def main():
-    global AUS_THR, DR, ELS, H, HERE, IN_THR, MATCH_EL, NG, PATH, PROJ, RES, _, a1, a2, ar, c, c1, c2, cens_flag, cens_rows, cens_site, cidx, cols, el, f, i, k, m, meth, n, name_of, ngcm, ngn, ngsa, ngsa_c, out, raw, rows, v
-    csv.field_size_limit(10 ** 7)
+    global \
+        AUS_THR, \
+        DR, \
+        ELS, \
+        H, \
+        HERE, \
+        IN_THR, \
+        MATCH_EL, \
+        NG, \
+        PATH, \
+        PROJ, \
+        RES, \
+        _, \
+        a1, \
+        a2, \
+        ar, \
+        c, \
+        c1, \
+        c2, \
+        cens_flag, \
+        cens_rows, \
+        cens_site, \
+        cidx, \
+        cols, \
+        el, \
+        f, \
+        i, \
+        k, \
+        m, \
+        meth, \
+        n, \
+        name_of, \
+        ngcm, \
+        ngn, \
+        ngsa, \
+        ngsa_c, \
+        out, \
+        raw, \
+        rows, \
+        v
+    csv.field_size_limit(10**7)
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(os.path.dirname(HERE))
     RES = os.path.join(HERE, "results")
@@ -63,12 +106,20 @@ def main():
         H = list(csv.reader(f))[11]
     cidx = {el: findcol(el) for el in ELS}
     cols = sorted(i for i, _ in cidx.values() if i is not None)
-    raw = pd.read_csv(NG, header=None, skiprows=12, usecols=[0] + cols, encoding="latin-1",
-                      low_memory=False, dtype=str)
+    raw = pd.read_csv(
+        NG,
+        header=None,
+        skiprows=12,
+        usecols=[0] + cols,
+        encoding="latin-1",
+        low_memory=False,
+        dtype=str,
+    )
     raw.columns = ["SITEID"] + [H[i].strip() for i in cols]
     name_of = {el: cidx[el][1] for el in ELS}
-    cens_rows = {el: int(raw[name_of[el]].astype(str).str.strip().str.startswith("<").sum())
-                 for el in ELS}
+    cens_rows = {
+        el: int(raw[name_of[el]].astype(str).str.strip().str.startswith("<").sum()) for el in ELS
+    }
     ngn = raw.copy()
     for c in ngn.columns:
         ngn[c] = pd.to_numeric(ngn[c], errors="coerce")
@@ -85,26 +136,47 @@ def main():
     for el in ELS:
         n = len(ngcm)
         m = int(ngcm[el].isna().sum())
-        rows.append(dict(pool="India NGCM drainage-selected", element=el, n=n, missing=m,
-                         pct_missing=round(100 * m / n, 1), censored="not distinguishable",
-                         pct_censored=""))
+        rows.append(
+            dict(
+                pool="India NGCM drainage-selected",
+                element=el,
+                n=n,
+                missing=m,
+                pct_missing=round(100 * m / n, 1),
+                censored="not distinguishable",
+                pct_censored="",
+            )
+        )
     for el in ELS:
         n = len(ngsa)
         m = int(ngsa[el].isna().sum())
         c = int(ngsa_c[el + "_c"].sum())
-        rows.append(dict(pool="Australia NGSA drainage-selected", element=el, n=n, missing=m,
-                         pct_missing=round(100 * m / n, 1), censored=c,
-                         pct_censored=round(100 * c / n, 1)))
+        rows.append(
+            dict(
+                pool="Australia NGSA drainage-selected",
+                element=el,
+                n=n,
+                missing=m,
+                pct_missing=round(100 * m / n, 1),
+                censored=c,
+                pct_censored=round(100 * c / n, 1),
+            )
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "data_quality.csv"), index=False)
-    meth = pd.DataFrame([dict(element=el, ngsa_column=name_of[el],
-                              censored_analyses_all_ngsa=cens_rows[el]) for el in ELS])
+    meth = pd.DataFrame(
+        [
+            dict(element=el, ngsa_column=name_of[el], censored_analyses_all_ngsa=cens_rows[el])
+            for el in ELS
+        ]
+    )
     meth.to_csv(os.path.join(RES, "analytical_methods.csv"), index=False)
     print("India pool n =", len(ngcm), " Australia pool n =", len(ngsa))
     print()
     print(out.to_string(index=False))
     print()
     print(meth.to_string(index=False))
+
 
 if __name__ == "__main__":
     main()

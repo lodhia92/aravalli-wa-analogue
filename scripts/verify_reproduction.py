@@ -39,8 +39,9 @@ def main():
         if lab in EXPECT:
             hit = abs(rho - EXPECT[lab]) <= TOL
             ok &= hit
-            print(f"  {lab:24s} rho={rho:.3f}  expected {EXPECT[lab]:.3f}  "
-                  f"{'OK' if hit else 'FAIL'}")
+            print(
+                f"  {lab:24s} rho={rho:.3f}  expected {EXPECT[lab]:.3f}  {'OK' if hit else 'FAIL'}"
+            )
         else:
             print(f"  {lab:24s} rho={rho:.3f}")
     print("\nREPRODUCTION", "CONFIRMED" if ok else "FAILED")

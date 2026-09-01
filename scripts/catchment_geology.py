@@ -15,6 +15,7 @@ Run:    python scripts/catchment_geology.py --start 1 --end 20
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import json
 import os
@@ -28,10 +29,20 @@ from aravalli_wa.geometry import geom_to_path, shape_to_path
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
-RES  = os.path.join(HERE, "results")
-SHP  = paths.TECTONIC
-KEEP = ["TECTNAME", "OROGEN", "PROVINCE", "CRATON", "LITHOLOGY", "TECTSETTIN",
-        "ERA_FROM", "ERA_TO", "MAX_AGE_MA", "MIN_AGE_MA"]
+RES = os.path.join(HERE, "results")
+SHP = paths.TECTONIC
+KEEP = [
+    "TECTNAME",
+    "OROGEN",
+    "PROVINCE",
+    "CRATON",
+    "LITHOLOGY",
+    "TECTSETTIN",
+    "ERA_FROM",
+    "ERA_TO",
+    "MAX_AGE_MA",
+    "MIN_AGE_MA",
+]
 TARGET_PTS = 30000
 
 
@@ -76,10 +87,16 @@ def main():
         # smallest containing tectonic unit for each interior point
         best_area = np.full(len(pts), np.inf)
         best_rec = np.full(len(pts), -1, dtype=int)
-        cand = np.where((bb[:, 0] <= x1) & (bb[:, 2] >= x0) & (bb[:, 1] <= y1) & (bb[:, 3] >= y0))[0]
+        cand = np.where((bb[:, 0] <= x1) & (bb[:, 2] >= x0) & (bb[:, 1] <= y1) & (bb[:, 3] >= y0))[
+            0
+        ]
         for i in cand:
-            sub = np.where((pts[:, 0] >= bb[i, 0]) & (pts[:, 0] <= bb[i, 2]) &
-                           (pts[:, 1] >= bb[i, 1]) & (pts[:, 1] <= bb[i, 3]))[0]
+            sub = np.where(
+                (pts[:, 0] >= bb[i, 0])
+                & (pts[:, 0] <= bb[i, 2])
+                & (pts[:, 1] >= bb[i, 1])
+                & (pts[:, 1] <= bb[i, 3])
+            )[0]
             if sub.size == 0:
                 continue
             up = shape_to_path(r.shape(i))
@@ -106,16 +123,26 @@ def main():
                 acc[key] = acc.get(key, 0.0) + frac
         for key, frac in sorted(acc.items(), key=lambda kv: -kv[1]):
             row = dict(zip(KEEP, key))
-            row.update(pair_no=p["pair_no"], domain=p["domain"], sid=p["sid"],
-                       area_km2=p["area_km2"], n_pts=len(pts), area_frac=round(frac, 4))
+            row.update(
+                pair_no=p["pair_no"],
+                domain=p["domain"],
+                sid=p["sid"],
+                area_km2=p["area_km2"],
+                n_pts=len(pts),
+                area_frac=round(frac, 4),
+            )
             rows.append(row)
         top = sorted(acc.items(), key=lambda kv: -kv[1])[:3]
-        print("pair %2d  %-17s %8.0f km2  n=%5d  " % (p["pair_no"], p["domain"], p["area_km2"], len(pts))
-              + "; ".join("%s %.0f%%" % (k[0], v * 100) for k, v in top))
+        print(
+            "pair %2d  %-17s %8.0f km2  n=%5d  "
+            % (p["pair_no"], p["domain"], p["area_km2"], len(pts))
+            + "; ".join("%s %.0f%%" % (k[0], v * 100) for k, v in top)
+        )
 
     out = os.path.join(RES, "catchment_geology_%02d_%02d.csv" % (a.start, a.end))
-    pd.DataFrame(rows)[["pair_no", "domain", "sid", "area_km2", "n_pts", "area_frac"] + KEEP] \
-        .to_csv(out, index=False)
+    pd.DataFrame(rows)[
+        ["pair_no", "domain", "sid", "area_km2", "n_pts", "area_frac"] + KEEP
+    ].to_csv(out, index=False)
     print("wrote", out)
 
 

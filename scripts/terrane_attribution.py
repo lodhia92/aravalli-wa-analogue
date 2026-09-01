@@ -15,6 +15,7 @@ Run:    python scripts/terrane_attribution.py
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import os
 
 import numpy as np
@@ -26,13 +27,25 @@ from aravalli_wa.geometry import shape_to_path
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
-RES  = os.path.join(HERE, "results")
-DR   = os.path.join(RES, "drainage")
-SHP  = paths.TECTONIC
-AUS_THR = 25.0   # same threshold as analogue_pairing.py
+RES = os.path.join(HERE, "results")
+DR = os.path.join(RES, "drainage")
+SHP = paths.TECTONIC
+AUS_THR = 25.0  # same threshold as analogue_pairing.py
 
-KEEP = ["TECTNAME", "OROGEN", "PROVINCE", "CRATON", "DOMAIN_", "LITHOLOGY",
-        "TECTSETTIN", "TSETT_QUAL", "ERA_FROM", "ERA_TO", "MAX_AGE_MA", "MIN_AGE_MA"]
+KEEP = [
+    "TECTNAME",
+    "OROGEN",
+    "PROVINCE",
+    "CRATON",
+    "DOMAIN_",
+    "LITHOLOGY",
+    "TECTSETTIN",
+    "TSETT_QUAL",
+    "ERA_FROM",
+    "ERA_TO",
+    "MAX_AGE_MA",
+    "MIN_AGE_MA",
+]
 
 
 def main():
@@ -53,13 +66,21 @@ def main():
         sid = float(str(row.aus_sid).split("_")[-1])
         pair_id[sid] = (n, row.domain, row.india_sid, row.dist)
     sites["pair_no"] = sites.SITEID.map(lambda s: pair_id.get(s, (None,))[0])
-    sites["pair_domain"] = sites.SITEID.map(lambda s: pair_id.get(s, (None, None))[1] if s in pair_id else None)
+    sites["pair_domain"] = sites.SITEID.map(
+        lambda s: pair_id.get(s, (None, None))[1] if s in pair_id else None
+    )
     sites["india_sid"] = sites.SITEID.map(lambda s: pair_id[s][2] if s in pair_id else None)
     sites["match_dist"] = sites.SITEID.map(lambda s: pair_id[s][3] if s in pair_id else None)
 
-    print("sites to attribute: %d (WA_PP %d, Y+N %d); of these %d are pair members"
-          % (len(sites), (sites.pool == "WA_PP").sum(), (sites.pool == "Y+N").sum(),
-             sites.pair_no.notna().sum()))
+    print(
+        "sites to attribute: %d (WA_PP %d, Y+N %d); of these %d are pair members"
+        % (
+            len(sites),
+            (sites.pool == "WA_PP").sum(),
+            (sites.pool == "Y+N").sum(),
+            sites.pair_no.notna().sum(),
+        )
+    )
     r = shapefile.Reader(SHP)
     fields = [f[0] for f in r.fields[1:]]
     idx = {k: fields.index(k) for k in KEEP if k in fields}
@@ -72,7 +93,7 @@ def main():
 
     lons = sites.lon.values
     lats = sites.lat.values
-    best = [None] * len(sites)          # (area, record)
+    best = [None] * len(sites)  # (area, record)
     for i in range(n):
         x0, y0, x1, y1 = bboxes[i]
         cand = np.where((lons >= x0) & (lons <= x1) & (lats >= y0) & (lats <= y1))[0]
@@ -97,20 +118,34 @@ def main():
     sites["attributed"] = [b is not None for b in best]
 
     out = os.path.join(RES, "terrane_sites.csv")
-    cols = ["SITEID", "pool", "lat", "lon", "catchment_km2", "pct_in_domain",
-            "pair_no", "pair_domain", "india_sid", "match_dist", "attributed",
-            "unit_area_deg2"] + [k for k in KEEP if k in sites.columns]
+    cols = [
+        "SITEID",
+        "pool",
+        "lat",
+        "lon",
+        "catchment_km2",
+        "pct_in_domain",
+        "pair_no",
+        "pair_domain",
+        "india_sid",
+        "match_dist",
+        "attributed",
+        "unit_area_deg2",
+    ] + [k for k in KEEP if k in sites.columns]
     sites[cols].to_csv(out, index=False)
     print("wrote", out)
-    print("unattributed (site falls outside every polygon): %d"
-          % (~sites.attributed).sum())
+    print("unattributed (site falls outside every polygon): %d" % (~sites.attributed).sum())
     print()
     print("--- WA Palaeoproterozoic pool, by tectonic unit ---")
     print(sites[sites.pool == "WA_PP"].TECTNAME.value_counts().to_string())
     print()
     print("--- Australian members of the twenty pairs ---")
     pm = sites[sites.pair_no.notna()].sort_values("pair_no")
-    print(pm[["pair_no", "pair_domain", "SITEID", "TECTNAME", "OROGEN", "PROVINCE"]].to_string(index=False))
+    print(
+        pm[["pair_no", "pair_domain", "SITEID", "TECTNAME", "OROGEN", "PROVINCE"]].to_string(
+            index=False
+        )
+    )
 
 
 if __name__ == "__main__":

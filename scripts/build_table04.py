@@ -10,6 +10,7 @@ Output: results/table04_cells.tsv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -27,8 +28,9 @@ def main():
     for n, r in enumerate(p.itertuples(), start=1):
         lat, lon = r.india_sid.split("_")[-2:]
         site = str(r.aus_sid).split("_")[-1].split(".")[0]
-        rows.append([str(n), r.domain, f"{float(lat):.3f}", f"{float(lon):.3f}",
-                     site, f"{site}001 Bulk"])
+        rows.append(
+            [str(n), r.domain, f"{float(lat):.3f}", f"{float(lon):.3f}", site, f"{site}001 Bulk"]
+        )
     with open(OUT, "w", newline="", encoding="utf8") as fh:
         w = csv.writer(fh, delimiter="\t")
         w.writerow(HEAD)

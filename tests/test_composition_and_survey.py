@@ -7,6 +7,7 @@ because a substituted value produces a plausible number rather than an error.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -47,7 +48,7 @@ class TestRatios:
     def test_a_missing_element_gives_nan_not_a_guess(self):
         r = ratios(frame(Sc=np.nan)).iloc[0]
         assert np.isnan(r["Th/Sc"]) and np.isnan(r["La/Sc"])
-        assert not np.isnan(r["Th/Co"])          # unaffected ratios still compute
+        assert not np.isnan(r["Th/Co"])  # unaffected ratios still compute
 
     def test_a_zero_denominator_gives_infinity_which_logr_then_drops(self):
         assert np.isinf(ratios(frame(Sc=0.0)).iloc[0]["Th/Sc"])
@@ -107,8 +108,14 @@ class TestCensoredAndMissingValues:
 
 
 class TestFindCol:
-    HEADER = ["SITEID", "Th XRF ppm 1", "Sc ICP-MS ppm 0.1", "Th ICP-MS ppm 0.05",
-              "La ICP-OES ppm 0.5", "Thorium total ppm"]
+    HEADER = [
+        "SITEID",
+        "Th XRF ppm 1",
+        "Sc ICP-MS ppm 0.1",
+        "Th ICP-MS ppm 0.05",
+        "La ICP-OES ppm 0.5",
+        "Thorium total ppm",
+    ]
 
     def test_prefers_icp_ms_over_xrf_when_both_are_reported(self):
         assert findcol(self.HEADER, "Th") == 3

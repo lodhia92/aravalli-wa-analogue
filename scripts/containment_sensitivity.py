@@ -43,6 +43,7 @@ Outputs: results/containment_grid.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import csv
 import math
@@ -71,14 +72,33 @@ _RAW = {}
 _D = {}
 
 
-
 def load_raw():
     """Read the two geochemistry tables and the four drainage tables once."""
     if _RAW:
         return _RAW
     ar = pd.read_csv(paths.NGCM_TABLE)
-    for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
-              "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
+    for c in [
+        "Th",
+        "Sc",
+        "Co",
+        "La",
+        "Eu",
+        "Sm",
+        "Gd",
+        "Yb",
+        "Nb",
+        "Y",
+        "TiO2",
+        "P2O5",
+        "Zr",
+        "Hf",
+        "Ce",
+        "Nd",
+        "Pr",
+        "Dy",
+        "LAT",
+        "LON",
+    ]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
     ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
     ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
@@ -94,11 +114,18 @@ def load_raw():
                 if c.strip().startswith(f"{el} {meth}"):
                     return i
 
-    cidx = {el: findcol(el)
-            for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm", "Gd"] + PATH}
+    cidx = {
+        el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm", "Gd"] + PATH
+    }
     ordered = sorted(((k, v) for k, v in cidx.items() if v is not None), key=lambda kv: kv[1])
-    ng = pd.read_csv(NG, header=None, skiprows=12, usecols=[0] + [v for _, v in ordered],
-                     encoding="latin-1", low_memory=False)
+    ng = pd.read_csv(
+        NG,
+        header=None,
+        skiprows=12,
+        usecols=[0] + [v for _, v in ordered],
+        encoding="latin-1",
+        low_memory=False,
+    )
     ng.columns = ["SITEID"] + [k for k, _ in ordered]
     for c in ng.columns:
         ng[c] = pd.to_numeric(ng[c], errors="coerce")
@@ -173,11 +200,16 @@ def build_D(in_thr, aus_thr):
         zi = ((logr(idf) - mi) / si)[MATCH].dropna()
         za = ((logr(adf) - ma) / sa)[MATCH].dropna()
         isub, asub = idf.loc[zi.index], adf.loc[za.index]
-        D[dom] = dict(Iv=zi.values, Av=za.values,
-                      isid=isub["sid"].values, asid=asub["sid"].values,
-                      ipct=isub["pct"].values.astype(float),
-                      apct=asub["pct"].values.astype(float),
-                      SI=score(isub, mu_in, sd_in), SA=score(asub, mu_au, sd_au))
+        D[dom] = dict(
+            Iv=zi.values,
+            Av=za.values,
+            isid=isub["sid"].values,
+            asid=asub["sid"].values,
+            ipct=isub["pct"].values.astype(float),
+            apct=asub["pct"].values.astype(float),
+            SI=score(isub, mu_in, sd_in),
+            SA=score(asub, mu_au, sd_au),
+        )
     _D[key] = D
     return D
 
@@ -189,10 +221,11 @@ def transfer(D, sel):
     return res, qs
 
 
-
-GRID = ([("Indian threshold varied, Australia held at 25", t, 25.0) for t in (40., 50., 60., 75.)]
-        + [("Australian threshold varied, India held at 50", 50., t) for t in (25., 40., 50., 60.)]
-        + [("both raised together", t, t) for t in (40., 50., 60.)])
+GRID = (
+    [("Indian threshold varied, Australia held at 25", t, 25.0) for t in (40.0, 50.0, 60.0, 75.0)]
+    + [("Australian threshold varied, India held at 50", 50.0, t) for t in (25.0, 40.0, 50.0, 60.0)]
+    + [("both raised together", t, t) for t in (40.0, 50.0, 60.0)]
+)
 
 
 def run_grid():
@@ -203,8 +236,11 @@ def run_grid():
     for lab, want in PUB_RHO.items():
         got = round(pres[lab][0], 3)
         assert got == want, f"published anchor failed: {lab} {got} != {want}"
-    print("published anchor reproduced: monazite %.3f, xenotime %.3f"
-          % (pres[LAB[0]][0], pres[LAB[1]][0]), flush=True)
+    print(
+        "published anchor reproduced: monazite %.3f, xenotime %.3f"
+        % (pres[LAB[0]][0], pres[LAB[1]][0]),
+        flush=True,
+    )
 
     rows = []
     for part, it, at in GRID:
@@ -218,23 +254,46 @@ def run_grid():
         res, qs = transfer(D, sel)
         for lab in LAB:
             r, p = res[lab]
-            rows.append(dict(
-                part=part, india_threshold=it, australia_threshold=at, mineral=lab,
-                india_pool_palaeoprot=in_pool[DOMS[0]], india_pool_archaean=in_pool[DOMS[1]],
-                aus_pool_palaeoprot=au_pool[DOMS[0]], aus_pool_archaean=au_pool[DOMS[1]],
-                n_pairs=npairs, shared_with_published=shared,
-                australian_pool_exhausted="Yes" if degenerate else "No",
-                rho=round(r, 3), perm_p=round(p, 4), q=round(float(qs[lab]), 4),
-                transfers="Yes" if qs[lab] < 0.05 else "No"))
-        print("  in %3.0f aus %3.0f  aus pool %3d/%3d  pairs %2d  shared %2d%s"
-              "  monazite %.3f q %.4f  xenotime %.3f q %.4f"
-              % (it, at, au_pool[DOMS[0]], au_pool[DOMS[1]], npairs, shared,
-                 "  POOL EXHAUSTED" if degenerate else "",
-                 res[LAB[0]][0], qs[LAB[0]], res[LAB[1]][0], qs[LAB[1]]), flush=True)
+            rows.append(
+                dict(
+                    part=part,
+                    india_threshold=it,
+                    australia_threshold=at,
+                    mineral=lab,
+                    india_pool_palaeoprot=in_pool[DOMS[0]],
+                    india_pool_archaean=in_pool[DOMS[1]],
+                    aus_pool_palaeoprot=au_pool[DOMS[0]],
+                    aus_pool_archaean=au_pool[DOMS[1]],
+                    n_pairs=npairs,
+                    shared_with_published=shared,
+                    australian_pool_exhausted="Yes" if degenerate else "No",
+                    rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[lab]), 4),
+                    transfers="Yes" if qs[lab] < 0.05 else "No",
+                )
+            )
+        print(
+            "  in %3.0f aus %3.0f  aus pool %3d/%3d  pairs %2d  shared %2d%s"
+            "  monazite %.3f q %.4f  xenotime %.3f q %.4f"
+            % (
+                it,
+                at,
+                au_pool[DOMS[0]],
+                au_pool[DOMS[1]],
+                npairs,
+                shared,
+                "  POOL EXHAUSTED" if degenerate else "",
+                res[LAB[0]][0],
+                qs[LAB[0]],
+                res[LAB[1]][0],
+                qs[LAB[1]],
+            ),
+            flush=True,
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "containment_grid.csv"), index=False)
     print("\nwrote results/containment_grid.csv")
-
 
 
 def corr_pool(s, c):
@@ -261,7 +320,7 @@ def corr_pool(s, c):
         return r, np.nan, "undefined"
     n = len(s)
     t = r * math.sqrt((n - 2) / (1 - r * r))
-    p = math.erfc(abs(t) / math.sqrt(2))          # normal approximation, exact enough at n > 200
+    p = math.erfc(abs(t) / math.sqrt(2))  # normal approximation, exact enough at n > 200
     return r, p, "asymptotic"
 
 
@@ -285,23 +344,42 @@ def run_confound():
             qs = bh(ps)
             for j, lab in enumerate(LAB):
                 r, p, n, how = keep[lab]
-                rows.append(dict(side=side, scope=scope, mineral=lab, n=n,
-                                 pct_spread=round(float(np.nanpercentile(
-                                     np.concatenate([D[d][pkey] for d in doms]), 75)
-                                     - np.nanpercentile(
-                                     np.concatenate([D[d][pkey] for d in doms]), 25)), 1),
-                                 rho_score_vs_pct_in_domain=("" if not np.isfinite(r)
-                                                             else round(r, 3)),
-                                 p=("" if not np.isfinite(p) else round(p, 4)), test=how,
-                                 q=("" if not np.isfinite(p) else round(float(qs[j]), 4)),
-                                 significant=("undefined" if not np.isfinite(r)
-                                              else "Yes" if qs[j] < 0.05 else "No")))
+                rows.append(
+                    dict(
+                        side=side,
+                        scope=scope,
+                        mineral=lab,
+                        n=n,
+                        pct_spread=round(
+                            float(
+                                np.nanpercentile(np.concatenate([D[d][pkey] for d in doms]), 75)
+                                - np.nanpercentile(np.concatenate([D[d][pkey] for d in doms]), 25)
+                            ),
+                            1,
+                        ),
+                        rho_score_vs_pct_in_domain=("" if not np.isfinite(r) else round(r, 3)),
+                        p=("" if not np.isfinite(p) else round(p, 4)),
+                        test=how,
+                        q=("" if not np.isfinite(p) else round(float(qs[j]), 4)),
+                        significant=(
+                            "undefined" if not np.isfinite(r) else "Yes" if qs[j] < 0.05 else "No"
+                        ),
+                    )
+                )
             r0 = keep[LAB[0]][0]
-            print("  %-9s %-22s monazite %s  n=%d  (%s)"
-                  % (side, scope[:22],
-                     "undefined, containment does not vary" if not np.isfinite(r0)
-                     else "%.3f (q %.4f)" % (r0, qs[0]),
-                     keep[LAB[0]][2], keep[LAB[0]][3]), flush=True)
+            print(
+                "  %-9s %-22s monazite %s  n=%d  (%s)"
+                % (
+                    side,
+                    scope[:22],
+                    "undefined, containment does not vary"
+                    if not np.isfinite(r0)
+                    else "%.3f (q %.4f)" % (r0, qs[0]),
+                    keep[LAB[0]][2],
+                    keep[LAB[0]][3],
+                ),
+                flush=True,
+            )
     P = pd.DataFrame(rows)
     P.to_csv(os.path.join(RES, "containment_vs_scores.csv"), index=False)
     print("wrote results/containment_vs_scores.csv\n")
@@ -315,9 +393,11 @@ def run_confound():
     pct_au, pct_in = np.concatenate(pct_au), np.concatenate(pct_in)
 
     rows = []
-    for cname, cov in (("Australian containment", pct_au),
-                       ("Indian containment", pct_in),
-                       ("both containments", np.column_stack([pct_au, pct_in]))):
+    for cname, cov in (
+        ("Australian containment", pct_au),
+        ("Indian containment", pct_in),
+        ("both containments", np.column_stack([pct_au, pct_in])),
+    ):
         cov2 = cov if cov.ndim > 1 else cov[:, None]
         C = np.column_stack([avg_rank(cov2[:, j])[0] for j in range(cov2.shape[1])])
         ps, keep = [], {}
@@ -345,11 +425,22 @@ def run_confound():
         qs = bh(ps)
         for j, lab in enumerate(LAB):
             r, p, n = keep[lab]
-            rows.append(dict(controlling_for=cname, mineral=lab, n=n, partial_rho=round(r, 3),
-                             perm_p=round(p, 4), q=round(float(qs[j]), 4),
-                             transfers="Yes" if qs[j] < 0.05 else "No"))
-        print("  controlling for %-24s monazite %.3f (q %.4f)  xenotime %.3f"
-              % (cname, keep[LAB[0]][0], qs[0], keep[LAB[1]][0]), flush=True)
+            rows.append(
+                dict(
+                    controlling_for=cname,
+                    mineral=lab,
+                    n=n,
+                    partial_rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[j]), 4),
+                    transfers="Yes" if qs[j] < 0.05 else "No",
+                )
+            )
+        print(
+            "  controlling for %-24s monazite %.3f (q %.4f)  xenotime %.3f"
+            % (cname, keep[LAB[0]][0], qs[0], keep[LAB[1]][0]),
+            flush=True,
+        )
     C2 = pd.DataFrame(rows)
     C2.to_csv(os.path.join(RES, "containment_covariate.csv"), index=False)
     pd.set_option("display.width", 260)
@@ -358,12 +449,12 @@ def run_confound():
 
     # context: how much of each Australian catchment actually sits outside its domain
     print("\ncontainment of the selected Australian pair members, per cent in domain:")
-    print("  median %.1f, min %.1f, max %.1f, below 50 per cent: %d of %d"
-          % (np.median(pct_au), pct_au.min(), pct_au.max(), (pct_au < 50).sum(), len(pct_au)))
+    print(
+        "  median %.1f, min %.1f, max %.1f, below 50 per cent: %d of %d"
+        % (np.median(pct_au), pct_au.min(), pct_au.max(), (pct_au < 50).sum(), len(pct_au))
+    )
     print("containment of the selected Indian pair members:")
     print("  median %.1f, min %.1f, max %.1f" % (np.median(pct_in), pct_in.min(), pct_in.max()))
-
-
 
 
 POWER_DRAWS = 1000
@@ -413,8 +504,11 @@ def run_power():
     pubsel = core.select(Dfull, "published")
     pubrho = {lab: core.spearman_perm(*core.vectors(Dfull, pubsel, lab)[:2])[0] for lab in LAB}
     pubdist = pair_distance(Dfull, pubsel)
-    print("published: monazite %.3f, xenotime %.3f, mean pair distance %.3f"
-          % (pubrho[LAB[0]], pubrho[LAB[1]], pubdist), flush=True)
+    print(
+        "published: monazite %.3f, xenotime %.3f, mean pair distance %.3f"
+        % (pubrho[LAB[0]], pubrho[LAB[1]], pubdist),
+        flush=True,
+    )
 
     rows = []
     for at in (40.0, 50.0, 60.0):
@@ -438,31 +532,53 @@ def run_power():
         for lab in LAB:
             dr = draws[lab]
             pct = float((dr <= obs[lab]).mean() * 100)
-            rows.append(dict(
-                australia_threshold=at, mineral=lab,
-                aus_pool_palaeoprot=sizes[DOMS[0]], aus_pool_archaean=sizes[DOMS[1]],
-                published_rho=round(pubrho[lab], 3),
-                thresholded_rho=round(obs[lab], 3),
-                random_subsample_median=round(float(np.median(dr)), 3),
-                random_subsample_lo=round(float(np.percentile(dr, 2.5)), 3),
-                random_subsample_hi=round(float(np.percentile(dr, 97.5)), 3),
-                percentile_of_thresholded=round(pct, 1),
-                explained_by_pool_size="Yes" if pct >= 2.5 else "No",
-                published_pair_distance=round(pubdist, 3),
-                thresholded_pair_distance=round(obsdist, 3),
-                random_pair_distance_median=round(float(np.median(dists)), 3),
-                random_pair_distance_lo=round(float(np.percentile(dists, 2.5)), 3),
-                random_pair_distance_hi=round(float(np.percentile(dists, 97.5)), 3)))
-        print("  aus %3.0f  pool %3d/%2d  monazite: thresholded %.3f, random pools of the same "
-              "size %.3f [%.3f, %.3f], percentile %.1f"
-              % (at, sizes[DOMS[0]], sizes[DOMS[1]], obs[LAB[0]],
-                 float(np.median(draws[LAB[0]])), float(np.percentile(draws[LAB[0]], 2.5)),
-                 float(np.percentile(draws[LAB[0]], 97.5)),
-                 float((draws[LAB[0]] <= obs[LAB[0]]).mean() * 100)), flush=True)
-        print("        match quality, mean pair distance: published %.3f, thresholded %.3f, "
-              "random pools %.3f [%.3f, %.3f]"
-              % (pubdist, obsdist, float(np.median(dists)),
-                 float(np.percentile(dists, 2.5)), float(np.percentile(dists, 97.5))), flush=True)
+            rows.append(
+                dict(
+                    australia_threshold=at,
+                    mineral=lab,
+                    aus_pool_palaeoprot=sizes[DOMS[0]],
+                    aus_pool_archaean=sizes[DOMS[1]],
+                    published_rho=round(pubrho[lab], 3),
+                    thresholded_rho=round(obs[lab], 3),
+                    random_subsample_median=round(float(np.median(dr)), 3),
+                    random_subsample_lo=round(float(np.percentile(dr, 2.5)), 3),
+                    random_subsample_hi=round(float(np.percentile(dr, 97.5)), 3),
+                    percentile_of_thresholded=round(pct, 1),
+                    explained_by_pool_size="Yes" if pct >= 2.5 else "No",
+                    published_pair_distance=round(pubdist, 3),
+                    thresholded_pair_distance=round(obsdist, 3),
+                    random_pair_distance_median=round(float(np.median(dists)), 3),
+                    random_pair_distance_lo=round(float(np.percentile(dists, 2.5)), 3),
+                    random_pair_distance_hi=round(float(np.percentile(dists, 97.5)), 3),
+                )
+            )
+        print(
+            "  aus %3.0f  pool %3d/%2d  monazite: thresholded %.3f, random pools of the same "
+            "size %.3f [%.3f, %.3f], percentile %.1f"
+            % (
+                at,
+                sizes[DOMS[0]],
+                sizes[DOMS[1]],
+                obs[LAB[0]],
+                float(np.median(draws[LAB[0]])),
+                float(np.percentile(draws[LAB[0]], 2.5)),
+                float(np.percentile(draws[LAB[0]], 97.5)),
+                float((draws[LAB[0]] <= obs[LAB[0]]).mean() * 100),
+            ),
+            flush=True,
+        )
+        print(
+            "        match quality, mean pair distance: published %.3f, thresholded %.3f, "
+            "random pools %.3f [%.3f, %.3f]"
+            % (
+                pubdist,
+                obsdist,
+                float(np.median(dists)),
+                float(np.percentile(dists, 2.5)),
+                float(np.percentile(dists, 97.5)),
+            ),
+            flush=True,
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "containment_random_control.csv"), index=False)
     pd.set_option("display.width", 300)

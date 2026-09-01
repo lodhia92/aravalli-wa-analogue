@@ -6,6 +6,7 @@ These run without any of the licensed input datasets.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import numpy as np
 import pytest
 from scipy.stats import spearmanr
@@ -25,7 +26,14 @@ class TestAvgRank:
 
     def test_ties_take_the_average_of_the_ranks_they_span(self):
         # values 5,5 occupy ranks 2 and 3, so both take 2.5; 9,9,9 occupy 4,5,6 -> 5.0
-        assert avg_rank([1.0, 5.0, 5.0, 9.0, 9.0, 9.0])[0].tolist() == [1.0, 2.5, 2.5, 5.0, 5.0, 5.0]
+        assert avg_rank([1.0, 5.0, 5.0, 9.0, 9.0, 9.0])[0].tolist() == [
+            1.0,
+            2.5,
+            2.5,
+            5.0,
+            5.0,
+            5.0,
+        ]
 
     def test_all_values_equal_gives_every_element_the_mid_rank(self):
         assert avg_rank([7.0, 7.0, 7.0, 7.0])[0].tolist() == [2.5, 2.5, 2.5, 2.5]
@@ -59,8 +67,23 @@ class TestCorrRows:
 class TestBenjaminiHochberg:
     # The fifteen probabilities of Benjamini & Hochberg (1995), Table 1, from the multiple
     # endpoints of Needleman et al. At alpha = 0.05 the procedure rejects the first four.
-    BH1995 = [0.0001, 0.0004, 0.0019, 0.0095, 0.0201, 0.0278, 0.0298, 0.0344,
-              0.0459, 0.3240, 0.4262, 0.5719, 0.6528, 0.7590, 1.0000]
+    BH1995 = [
+        0.0001,
+        0.0004,
+        0.0019,
+        0.0095,
+        0.0201,
+        0.0278,
+        0.0298,
+        0.0344,
+        0.0459,
+        0.3240,
+        0.4262,
+        0.5719,
+        0.6528,
+        0.7590,
+        1.0000,
+    ]
 
     def test_rejects_exactly_four_at_five_per_cent(self):
         assert int((bh(self.BH1995) <= 0.05).sum()) == 4
@@ -77,7 +100,7 @@ class TestBenjaminiHochberg:
     def test_returned_in_input_order_not_sorted_order(self):
         shuffled = [0.0095, 0.0001, 1.0000, 0.0004]
         q = bh(shuffled)
-        assert np.argmin(q) == 1                       # the smallest p is still at index 1
+        assert np.argmin(q) == 1  # the smallest p is still at index 1
         assert q[2] == pytest.approx(max(q))
 
     def test_monotone_non_decreasing_in_the_sorted_probabilities(self):

@@ -21,6 +21,7 @@ regenerates figures/ngcm_coverage_updated.png.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import glob
 import json
@@ -37,7 +38,7 @@ import paths
 
 warnings.filterwarnings("ignore")
 
-SKIPPED = []   # workbooks that could not be read, reported at the end
+SKIPPED = []  # workbooks that could not be read, reported at the end
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(HERE)
@@ -47,10 +48,19 @@ RES = os.path.join(HERE, "results")
 
 def load_state(state_dir):
     rows = []
-    for f in glob.glob(os.path.join(RAW, state_dir, "**", "*samples.metadata*.xlsx"), recursive=True):
+    for f in glob.glob(
+        os.path.join(RAW, state_dir, "**", "*samples.metadata*.xlsx"), recursive=True
+    ):
         try:
-            df = pd.read_excel(f, sheet_name="Samples", header=None, skiprows=3,
-                               usecols=[6, 7], names=["lat", "lon"], engine="openpyxl")
+            df = pd.read_excel(
+                f,
+                sheet_name="Samples",
+                header=None,
+                skiprows=3,
+                usecols=[6, 7],
+                names=["lat", "lon"],
+                engine="openpyxl",
+            )
         except (ValueError, KeyError, OSError, zipfile.BadZipFile) as ex:
             # A workbook openpyxl cannot parse, or one with no "Samples" sheet. Named and
             # counted so that a survey file is never dropped from the coverage silently.
@@ -64,22 +74,41 @@ def load_state(state_dir):
         m = re.search(r"_([0-9]{2}[A-Z])", f)
         df["toposheet"] = m.group(1) if m else "?"
         rows.append(df)
-    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame(columns=["lat", "lon", "toposheet"])
+    return (
+        pd.concat(rows, ignore_index=True)
+        if rows
+        else pd.DataFrame(columns=["lat", "lon", "toposheet"])
+    )
 
 
 def combine():
     from shapely.geometry import Point, shape
     from shapely.prepared import prep
+
     frames = []
     for f in glob.glob(os.path.join(RES, "_cov_*.csv")):
         st = os.path.basename(f).replace("_cov_", "").replace(".csv", "")
-        d = pd.read_csv(f); d["state"] = st; frames.append(d)
+        d = pd.read_csv(f)
+        d["state"] = st
+        frames.append(d)
     if not frames:
         sys.exit("No per-state caches found. Run --state for each state first.")
     A = pd.concat(frames, ignore_index=True)
     A.to_csv(os.path.join(RES, "ngcm_all_coverage.csv"), index=False)
-    sand = prep(shape(json.load(open(os.path.join(RES, "sandmata_complex.geojson")))["features"][0]["geometry"]).buffer(0))
-    mang = prep(shape(json.load(open(os.path.join(RES, "archaean_mangalwar_domain.geojson")))["features"][0]["geometry"]).buffer(0))
+    sand = prep(
+        shape(
+            json.load(open(os.path.join(RES, "sandmata_complex.geojson")))["features"][0][
+                "geometry"
+            ]
+        ).buffer(0)
+    )
+    mang = prep(
+        shape(
+            json.load(open(os.path.join(RES, "archaean_mangalwar_domain.geojson")))["features"][0][
+                "geometry"
+            ]
+        ).buffer(0)
+    )
 
     def cnt(df, pp):
         s = df[(df.lon >= 73.8) & (df.lon <= 76.1) & (df.lat >= 23.9) & (df.lat <= 27.0)]
@@ -102,8 +131,14 @@ def main():
         a = load_state(args.state)
         stn = re.sub(r"^[0-9]+\.\s*", "", args.state).replace(" ", "_")
         a.to_csv(os.path.join(RES, f"_cov_{stn}.csv"), index=False)
-        print(f"{stn}: n={len(a)}"
-              + (f" lon {a.lon.min():.1f}-{a.lon.max():.1f} lat {a.lat.min():.1f}-{a.lat.max():.1f}" if len(a) else ""))
+        print(
+            f"{stn}: n={len(a)}"
+            + (
+                f" lon {a.lon.min():.1f}-{a.lon.max():.1f} lat {a.lat.min():.1f}-{a.lat.max():.1f}"
+                if len(a)
+                else ""
+            )
+        )
     elif args.combine:
         combine()
     else:

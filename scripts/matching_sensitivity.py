@@ -29,6 +29,7 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import csv
 import os
@@ -41,17 +42,22 @@ from aravalli_wa.composition import logr
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 from aravalli_wa.stats import avg_rank, bh, corr_rows
 
-csv.field_size_limit(10 ** 7)
+csv.field_size_limit(10**7)
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")
 DR = os.path.join(RES, "drainage")
 IN_THR, AUS_THR = 50.0, 25.0
-CI = dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
+CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
 MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
 PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
-MIN = {"monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"], "xenotime (Dy)": ["Dy"],
-       "zircon (Zr,Hf)": ["Zr", "Hf"], "Ti-oxide (Ti)": ["Ti"], "apatite (P)": ["P"]}
+MIN = {
+    "monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"],
+    "xenotime (Dy)": ["Dy"],
+    "zircon (Zr,Hf)": ["Zr", "Hf"],
+    "Ti-oxide (Ti)": ["Ti"],
+    "apatite (P)": ["P"],
+}
 LAB = list(MIN)
 DOMS = ["Palaeoproterozoic", "Archaean"]
 NPERM, NDRAW, KPUB = 100000, 10000, 10
@@ -131,8 +137,28 @@ def prepare():
         z = np.load(cache, allow_pickle=True)
         return {k: z[k].item() for k in ["D"]}["D"]
     ar = pd.read_csv(paths.NGCM_TABLE)
-    for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
-              "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
+    for c in [
+        "Th",
+        "Sc",
+        "Co",
+        "La",
+        "Eu",
+        "Sm",
+        "Gd",
+        "Yb",
+        "Nb",
+        "Y",
+        "TiO2",
+        "P2O5",
+        "Zr",
+        "Hf",
+        "Ce",
+        "Nd",
+        "Pr",
+        "Dy",
+        "LAT",
+        "LON",
+    ]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
     ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
     ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
@@ -157,11 +183,18 @@ def prepare():
                 if c.strip().startswith(f"{el} {meth}"):
                     return i
 
-    cidx = {el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm",
-                                       "Gd"] + PATH}
+    cidx = {
+        el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm", "Gd"] + PATH
+    }
     ordered = sorted(((k, v) for k, v in cidx.items() if v is not None), key=lambda kv: kv[1])
-    ng = pd.read_csv(NG, header=None, skiprows=12, usecols=[0] + [v for _, v in ordered],
-                     encoding="latin-1", low_memory=False)
+    ng = pd.read_csv(
+        NG,
+        header=None,
+        skiprows=12,
+        usecols=[0] + [v for _, v in ordered],
+        encoding="latin-1",
+        low_memory=False,
+    )
     ng.columns = ["SITEID"] + [k for k, _ in ordered]
     for c in ng.columns:
         ng[c] = pd.to_numeric(ng[c], errors="coerce")
@@ -175,8 +208,10 @@ def prepare():
         m["sid"] = [f"{label}_{i}" for i in m.index]
         return m.reset_index()
 
-    wapp, yiln = aus(os.path.join(DR, "wa_palaeoprot_contained.csv"), "WA_PP"), \
-        aus(os.path.join(DR, "yilgarn_contained.csv"), "Y+N")
+    wapp, yiln = (
+        aus(os.path.join(DR, "wa_palaeoprot_contained.csv"), "WA_PP"),
+        aus(os.path.join(DR, "yilgarn_contained.csv"), "Y+N"),
+    )
     ngcm_all, ngsa_all = pd.concat([sand, mang]), pd.concat([wapp, yiln])
     mi, si = logr(ngcm_all).mean(), logr(ngcm_all).std(ddof=0)
     ma, sa = logr(ngsa_all).mean(), logr(ngsa_all).std(ddof=0)
@@ -198,9 +233,14 @@ def prepare():
         zi = ((logr(idf) - mi) / si)[MATCH].dropna()
         za = ((logr(adf) - ma) / sa)[MATCH].dropna()
         isub, asub = idf.loc[zi.index], adf.loc[za.index]
-        D[dom] = dict(Iv=zi.values, Av=za.values,
-                      isid=isub["sid"].values, asid=asub["sid"].values,
-                      SI=score(isub, mu_in, sd_in), SA=score(asub, mu_au, sd_au))
+        D[dom] = dict(
+            Iv=zi.values,
+            Av=za.values,
+            isid=isub["sid"].values,
+            asid=asub["sid"].values,
+            SI=score(isub, mu_in, sd_in),
+            SA=score(asub, mu_au, sd_au),
+        )
     np.savez(os.path.join(RES, "_matching_cache.npz"), D=np.array(D, dtype=object))
     return D
 
@@ -290,19 +330,38 @@ def pairkeys(D, sel):
 def run_variants(D):
     pub = select(D, "published")
     pubk = pairkeys(D, pub)
-    VAR = [("algorithm", "mutual nearest neighbour, top 10 per domain (published)", "published",
-            KPUB, None),
-           ("algorithm", "one-directional nearest neighbour, mutuality not required", "oneway",
-            KPUB, None),
-           ("algorithm", "greedy unique, each Indian site used once", "greedy_unique", KPUB, None),
-           ("algorithm", "globally optimal one-to-one assignment", "optimal", KPUB, None),
-           ("algorithm", "Mahalanobis distance in place of Euclidean", "mahalanobis", KPUB, None),
-           ("algorithm", "mutual pairs only, no distance ranking cap", "strict_mnn", 10 ** 6, None)]
+    VAR = [
+        (
+            "algorithm",
+            "mutual nearest neighbour, top 10 per domain (published)",
+            "published",
+            KPUB,
+            None,
+        ),
+        (
+            "algorithm",
+            "one-directional nearest neighbour, mutuality not required",
+            "oneway",
+            KPUB,
+            None,
+        ),
+        ("algorithm", "greedy unique, each Indian site used once", "greedy_unique", KPUB, None),
+        ("algorithm", "globally optimal one-to-one assignment", "optimal", KPUB, None),
+        ("algorithm", "Mahalanobis distance in place of Euclidean", "mahalanobis", KPUB, None),
+        ("algorithm", "mutual pairs only, no distance ranking cap", "strict_mnn", 10**6, None),
+    ]
     for k in (5, 8, 12, 15, 20, 30):
         VAR.append(("pair count", "top %d pairs per domain" % k, "published", k, None))
     for pct in (25, 50, 75, 100):
-        VAR.append(("threshold", "mutual pairs within the %dth distance percentile" % pct,
-                    "caliper", KPUB, pct))
+        VAR.append(
+            (
+                "threshold",
+                "mutual pairs within the %dth distance percentile" % pct,
+                "caliper",
+                KPUB,
+                pct,
+            )
+        )
     rows = []
     for part, name, how, k, pct in VAR:
         sel = select(D, how, k=k, pct=pct)
@@ -312,13 +371,25 @@ def run_variants(D):
         qs = dict(zip(LAB, bh([res[l][1] for l in LAB])))
         for lab in LAB:
             r, p = res[lab]
-            rows.append(dict(part=part, variant=name, mineral=lab,
-                             n_selected=npairs, n=len(vectors(D, sel, lab)[0]),
-                             shared_with_published=shared, rho=round(r, 3),
-                             perm_p=round(p, 4), q=round(float(qs[lab]), 4),
-                             transfers="Yes" if qs[lab] < 0.05 else "No"))
-        print("  %-58s n=%-3d shared=%-3d monazite rho=%.3f q=%.4f"
-              % (name[:58], npairs, shared, res[LAB[0]][0], qs[LAB[0]]), flush=True)
+            rows.append(
+                dict(
+                    part=part,
+                    variant=name,
+                    mineral=lab,
+                    n_selected=npairs,
+                    n=len(vectors(D, sel, lab)[0]),
+                    shared_with_published=shared,
+                    rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[lab]), 4),
+                    transfers="Yes" if qs[lab] < 0.05 else "No",
+                )
+            )
+        print(
+            "  %-58s n=%-3d shared=%-3d monazite rho=%.3f q=%.4f"
+            % (name[:58], npairs, shared, res[LAB[0]][0], qs[LAB[0]]),
+            flush=True,
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "matching_variants.csv"), index=False)
     print("wrote results/matching_variants.csv")
@@ -350,24 +421,33 @@ def run_control(D):
             A, B = np.hstack(A), np.hstack(B)
             RA, RB = avg_rank(A), avg_rank(B)
             Ac, Bc = RA - RA.mean(1, keepdims=True), RB - RB.mean(1, keepdims=True)
-            den = np.sqrt((Ac ** 2).sum(1) * (Bc ** 2).sum(1))
+            den = np.sqrt((Ac**2).sum(1) * (Bc**2).sum(1))
             with np.errstate(invalid="ignore", divide="ignore"):
                 nulls.append(np.where(den > 0, (Ac * Bc).sum(1) / den, np.nan))
             done += m
             print("    %s %d/%d" % (lab[:20], done, NDRAW), flush=True)
         nl = np.concatenate(nulls)
         nl = nl[np.isfinite(nl)]
-        rows.append(dict(mineral=lab, n_pairs=len(a_obs), rho_matched=round(rho_obs, 3),
-                         n_draws=len(nl), rho_random_mean=round(float(nl.mean()), 3),
-                         rho_random_sd=round(float(nl.std(ddof=1)), 3),
-                         rho_random_p50=round(float(np.percentile(nl, 50)), 3),
-                         rho_random_p95=round(float(np.percentile(nl, 95)), 3),
-                         rho_random_p99=round(float(np.percentile(nl, 99)), 3),
-                         p_vs_random=round(float((np.sum(nl >= rho_obs) + 1) / (len(nl) + 1)), 4),
-                         frac_random_above_matched=round(float(np.mean(nl >= rho_obs)), 4)))
-        print("  %-22s matched %.3f  random mean %.3f  p95 %.3f  p=%.4f"
-              % (lab[:22], rho_obs, nl.mean(), np.percentile(nl, 95), rows[-1]["p_vs_random"]),
-              flush=True)
+        rows.append(
+            dict(
+                mineral=lab,
+                n_pairs=len(a_obs),
+                rho_matched=round(rho_obs, 3),
+                n_draws=len(nl),
+                rho_random_mean=round(float(nl.mean()), 3),
+                rho_random_sd=round(float(nl.std(ddof=1)), 3),
+                rho_random_p50=round(float(np.percentile(nl, 50)), 3),
+                rho_random_p95=round(float(np.percentile(nl, 95)), 3),
+                rho_random_p99=round(float(np.percentile(nl, 99)), 3),
+                p_vs_random=round(float((np.sum(nl >= rho_obs) + 1) / (len(nl) + 1)), 4),
+                frac_random_above_matched=round(float(np.mean(nl >= rho_obs)), 4),
+            )
+        )
+        print(
+            "  %-22s matched %.3f  random mean %.3f  p95 %.3f  p=%.4f"
+            % (lab[:22], rho_obs, nl.mean(), np.percentile(nl, 95), rows[-1]["p_vs_random"]),
+            flush=True,
+        )
     pd.DataFrame(rows).to_csv(os.path.join(RES, "matching_random_control.csv"), index=False)
     print("wrote results/matching_random_control.csv")
 
@@ -380,8 +460,13 @@ def run_domain(D):
         a, b, g = vectors(D, pub, lab)
         r_all, p_all = spearman_perm(a, b)
         r_within, p_within = spearman_perm(a, b, blocks=g)
-        rec = dict(mineral=lab, n=len(a), rho_all=round(r_all, 3), p_all=round(p_all, 4),
-                   p_within_domain_permutation=round(p_within, 4))
+        rec = dict(
+            mineral=lab,
+            n=len(a),
+            rho_all=round(r_all, 3),
+            p_all=round(p_all, 4),
+            p_within_domain_permutation=round(p_within, 4),
+        )
         for gi, dom in enumerate(DOMS):
             m = g == gi
             if m.sum() >= 4:
@@ -411,7 +496,11 @@ def run_domain(D):
 
 def summary():
     pd.set_option("display.width", 250)
-    for f in ("matching_variants.csv", "matching_random_control.csv", "matching_domain_contrast.csv"):
+    for f in (
+        "matching_variants.csv",
+        "matching_random_control.csv",
+        "matching_domain_contrast.csv",
+    ):
         p = os.path.join(RES, f)
         if os.path.exists(p):
             print("\n==== %s ====" % f)
@@ -420,16 +509,19 @@ def summary():
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--part", required=True,
-                    choices=["variants", "control", "domain", "summary", "prepare"])
+    ap.add_argument(
+        "--part", required=True, choices=["variants", "control", "domain", "summary", "prepare"]
+    )
     A = ap.parse_args()
     if A.part == "summary":
         summary()
     else:
         D = prepare()
-        print("prepared: " + ", ".join("%s india %d aus %d"
-                                       % (d, len(D[d]["Iv"]), len(D[d]["Av"])) for d in DOMS),
-              flush=True)
+        print(
+            "prepared: "
+            + ", ".join("%s india %d aus %d" % (d, len(D[d]["Iv"]), len(D[d]["Av"])) for d in DOMS),
+            flush=True,
+        )
         if A.part == "variants":
             run_variants(D)
         elif A.part == "control":

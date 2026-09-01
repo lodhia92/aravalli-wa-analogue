@@ -5,6 +5,7 @@ matplotlib.path is used only as a geometry primitive here; nothing in this packa
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import numpy as np
 from matplotlib.path import Path
 
@@ -15,7 +16,7 @@ def shape_to_path(shp):
     parts = list(shp.parts) + [len(pts)]
     verts, codes = [], []
     for i in range(len(parts) - 1):
-        seg = pts[parts[i]:parts[i + 1]]
+        seg = pts[parts[i] : parts[i + 1]]
         if len(seg) < 3:
             continue
         verts.append(seg)
@@ -43,4 +44,9 @@ def geom_to_path(geom):
     if not verts:
         return None, None
     v = np.vstack(verts)
-    return Path(v, np.concatenate(codes)), (v[:, 0].min(), v[:, 1].min(), v[:, 0].max(), v[:, 1].max())
+    return Path(v, np.concatenate(codes)), (
+        v[:, 0].min(),
+        v[:, 1].min(),
+        v[:, 0].max(),
+        v[:, 1].max(),
+    )

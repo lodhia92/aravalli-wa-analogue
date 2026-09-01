@@ -20,6 +20,7 @@ that catchment inside the domain (pct_in_domain); filter by threshold afterwards
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import json
 import os
@@ -55,7 +56,9 @@ def main():
     ap.add_argument("--domain", required=True)
     ap.add_argument("--samples", required=True)
     ap.add_argument("--basins", required=True)
-    ap.add_argument("--region", nargs=4, type=float, required=True, metavar=("X0", "Y0", "X1", "Y1"))
+    ap.add_argument(
+        "--region", nargs=4, type=float, required=True, metavar=("X0", "Y0", "X1", "Y1")
+    )
     ap.add_argument("--latcol", default="LAT")
     ap.add_argument("--loncol", default="LON")
     ap.add_argument("--idcol", default=None)
@@ -86,7 +89,8 @@ def main():
             cur = st.pop()
             for u in up.get(cur, []):
                 if u not in seen:
-                    seen.add(u); st.append(u)
+                    seen.add(u)
+                    st.append(u)
         return seen
 
     # spatial index of basins for point location
@@ -107,14 +111,19 @@ def main():
         base = None
         for j in tree.query(pt):
             if geoms[ids[j]].contains(pt):
-                base = ids[j]; break
+                base = ids[j]
+                break
         if base is None:
             continue
         cat = upstream(base)
         tot = sum(info[h][1] for h in cat)
         ind = sum(info[h][1] for h in cat if h in in_dom)
-        rec = {"lat": round(float(s._lat), 4), "lon": round(float(s._lon), 4),
-               "catchment_km2": round(tot, 1), "pct_in_domain": round(100 * ind / tot, 1) if tot else 0.0}
+        rec = {
+            "lat": round(float(s._lat), 4),
+            "lon": round(float(s._lon), 4),
+            "catchment_km2": round(tot, 1),
+            "pct_in_domain": round(100 * ind / tot, 1) if tot else 0.0,
+        }
         if args.idcol and args.idcol in df.columns:
             rec["id"] = s[args.idcol]
         rows.append(rec)

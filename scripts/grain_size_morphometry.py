@@ -37,6 +37,7 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import csv
 import json
@@ -50,17 +51,22 @@ from aravalli_wa.composition import logr
 from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 from aravalli_wa.stats import avg_rank, bh, corr_rows
 
-csv.field_size_limit(10 ** 7)
+csv.field_size_limit(10**7)
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")
 DR = os.path.join(RES, "drainage")
 IN_THR, AUS_THR = 50.0, 25.0
-CI = dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
+CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
 MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
 PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
-MIN = {"monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"], "xenotime (Dy)": ["Dy"],
-       "zircon (Zr,Hf)": ["Zr", "Hf"], "Ti-oxide (Ti)": ["Ti"], "apatite (P)": ["P"]}
+MIN = {
+    "monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"],
+    "xenotime (Dy)": ["Dy"],
+    "zircon (Zr,Hf)": ["Zr", "Hf"],
+    "Ti-oxide (Ti)": ["Ti"],
+    "apatite (P)": ["P"],
+}
 LAB = list(MIN)
 NPERM = 100000
 rng = np.random.default_rng(20260827)
@@ -79,8 +85,28 @@ def spearman_perm(a, b):
 
 # The Indian pool does not vary across the grain-size treatments; it is built once.
 ar = pd.read_csv(paths.NGCM_TABLE)
-for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
-          "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
+for c in [
+    "Th",
+    "Sc",
+    "Co",
+    "La",
+    "Eu",
+    "Sm",
+    "Gd",
+    "Yb",
+    "Nb",
+    "Y",
+    "TiO2",
+    "P2O5",
+    "Zr",
+    "Hf",
+    "Ce",
+    "Nd",
+    "Pr",
+    "Dy",
+    "LAT",
+    "LON",
+]:
     ar[c] = pd.to_numeric(ar[c], errors="coerce")
 ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
 ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
@@ -116,12 +142,12 @@ def findcol(el):
                 return i
 
 
-cidx = {el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm",
-                                   "Gd"] + PATH}
+cidx = {
+    el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm", "Gd"] + PATH
+}
 ordered = sorted(((k, v) for k, v in cidx.items() if v is not None), key=lambda kv: kv[1])
 use = [0, GS_COL, DEPTH_COL] + [v for _, v in ordered]
-NGRAW = pd.read_csv(NG, header=None, skiprows=12, usecols=use, encoding="latin-1",
-                    low_memory=False)
+NGRAW = pd.read_csv(NG, header=None, skiprows=12, usecols=use, encoding="latin-1", low_memory=False)
 NGRAW.columns = ["SITEID", "GRAIN_SIZE", "DEPTH"] + [k for k, _ in ordered]
 for c in NGRAW.columns:
     if c not in ("GRAIN_SIZE", "DEPTH"):
@@ -132,12 +158,14 @@ NGRAW["DEPTH"] = NGRAW["DEPTH"].astype(str).str.strip()
 # The Bulk rows carry no ICP-MS or XRF geochemistry for any element used here (checked: 0 of
 # 2 630 rows), so the "median per site" of the published pipeline is in practice a median of the
 # two real fractions across the two depths, four values per element.
-SUBSETS = [("all rows, median per site (as published)", None, None),
-           ("fine fraction only (<75 um)", "<75 µm", None),
-           ("coarse fraction only (<2 mm)", "<2 mm", None),
-           ("fine fraction, top of soil only", "<75 µm", "TOS"),
-           ("top of soil only, both fractions", None, "TOS"),
-           ("bottom of soil only, both fractions", None, "BOS")]
+SUBSETS = [
+    ("all rows, median per site (as published)", None, None),
+    ("fine fraction only (<75 um)", "<75 µm", None),
+    ("coarse fraction only (<2 mm)", "<2 mm", None),
+    ("fine fraction, top of soil only", "<75 µm", "TOS"),
+    ("top of soil only, both fractions", None, "TOS"),
+    ("bottom of soil only, both fractions", None, "BOS"),
+]
 
 
 def ngsa(gs=None, depth=None):
@@ -176,12 +204,22 @@ def build(ng):
             di = np.sqrt(((Iv - Av[a]) ** 2).sum(1))
             bi = int(di.argmin())
             da = np.sqrt(((Av - Iv[bi]) ** 2).sum(1))
-            rows.append(dict(domain=dom, india_sid=idf.loc[zi.index[bi], "sid"],
-                             aus_sid=adf.loc[za.index[a], "sid"], dist=float(di[bi]),
-                             mnn=(int(da.argmin()) == a)))
+            rows.append(
+                dict(
+                    domain=dom,
+                    india_sid=idf.loc[zi.index[bi], "sid"],
+                    aus_sid=adf.loc[za.index[a], "sid"],
+                    dist=float(di[bi]),
+                    mnn=(int(da.argmin()) == a),
+                )
+            )
     P = pd.DataFrame(rows)
-    pairs = pd.concat([P[P.domain == d].sort_values(["mnn", "dist"], ascending=[False, True]).head(10)
-                       for d in ("Palaeoproterozoic", "Archaean")]).reset_index(drop=True)
+    pairs = pd.concat(
+        [
+            P[P.domain == d].sort_values(["mnn", "dist"], ascending=[False, True]).head(10)
+            for d in ("Palaeoproterozoic", "Archaean")
+        ]
+    ).reset_index(drop=True)
     return pairs, ngsa_all
 
 
@@ -214,8 +252,10 @@ def run_fractions():
         ng = ngsa(gs, depth)
         pairs_new, pool = build(ng)
         shared = len(set(zip(pairs_new.india_sid, pairs_new.aus_sid)) & set(base_key))
-        for mode, pairs in (("published pairs held fixed", base_pairs),
-                            ("matching rebuilt from this subset", pairs_new)):
+        for mode, pairs in (
+            ("published pairs held fixed", base_pairs),
+            ("matching rebuilt from this subset", pairs_new),
+        ):
             sc = scores(pairs, pool)
             res = {}
             for lab in LAB:
@@ -225,17 +265,41 @@ def run_fractions():
             qs = dict(zip(LAB, bh([res[l][1] for l in LAB])))
             for lab in LAB:
                 r, p, n = res[lab]
-                rows.append(dict(subset=name, mode=mode, mineral=lab, n=n,
-                                 pairs_shared_with_published=(shared if "rebuilt" in mode else 20),
-                                 rho=round(r, 3), perm_p=round(p, 4), q=round(float(qs[lab]), 4),
-                                 transfers="Yes" if qs[lab] < 0.05 else "No"))
-        print("  %-44s shared=%2d  fixed-pairs monazite %.3f  rebuilt monazite %.3f"
-              % (name[:44], shared,
-                 [x for x in rows if x["subset"] == name
-                  and x["mode"].startswith("published") and x["mineral"] == LAB[0]][0]["rho"],
-                 [x for x in rows if x["subset"] == name
-                  and x["mode"].startswith("matching") and x["mineral"] == LAB[0]][0]["rho"]),
-              flush=True)
+                rows.append(
+                    dict(
+                        subset=name,
+                        mode=mode,
+                        mineral=lab,
+                        n=n,
+                        pairs_shared_with_published=(shared if "rebuilt" in mode else 20),
+                        rho=round(r, 3),
+                        perm_p=round(p, 4),
+                        q=round(float(qs[lab]), 4),
+                        transfers="Yes" if qs[lab] < 0.05 else "No",
+                    )
+                )
+        print(
+            "  %-44s shared=%2d  fixed-pairs monazite %.3f  rebuilt monazite %.3f"
+            % (
+                name[:44],
+                shared,
+                [
+                    x
+                    for x in rows
+                    if x["subset"] == name
+                    and x["mode"].startswith("published")
+                    and x["mineral"] == LAB[0]
+                ][0]["rho"],
+                [
+                    x
+                    for x in rows
+                    if x["subset"] == name
+                    and x["mode"].startswith("matching")
+                    and x["mineral"] == LAB[0]
+                ][0]["rho"],
+            ),
+            flush=True,
+        )
     O = pd.DataFrame(rows)
     O.to_csv(os.path.join(RES, "grain_size_fractions.csv"), index=False)
     pd.set_option("display.width", 260)
@@ -271,23 +335,28 @@ def run_morphometry():
     pairs, pool = build(ngsa())
     sc = scores(pairs, pool)
     geo = {}
-    for side, f in (("india", "pair_catchments_india.geojson"),
-                    ("australia", "pair_catchments_australia.geojson")):
+    for side, f in (
+        ("india", "pair_catchments_india.geojson"),
+        ("australia", "pair_catchments_australia.geojson"),
+    ):
         g = json.load(open(os.path.join(RES, f)))
         for ft in g["features"]:
             p = ft["properties"]
             cx, cy = centroid_and_area(ft)
-            geo[(side, p["sid"])] = dict(area_km2=float(p["area_km2"]),
-                                         dist_km=float(haversine(float(p["lon"]), float(p["lat"]),
-                                                                 cx, cy)))
-    miss = [k for k in zip(["india"] * 20, pairs.india_sid) if k not in geo] + \
-           [k for k in zip(["australia"] * 20, pairs.aus_sid) if k not in geo]
+            geo[(side, p["sid"])] = dict(
+                area_km2=float(p["area_km2"]),
+                dist_km=float(haversine(float(p["lon"]), float(p["lat"]), cx, cy)),
+            )
+    miss = [k for k in zip(["india"] * 20, pairs.india_sid) if k not in geo] + [
+        k for k in zip(["australia"] * 20, pairs.aus_sid) if k not in geo
+    ]
     print("catchment records missing for %d of 40 sites" % len(miss), flush=True)
     V = {}
     for side, sids in (("india", pairs.india_sid), ("australia", pairs.aus_sid)):
         for var in ("area_km2", "dist_km"):
-            V[(side, var)] = np.array([geo[(side, s)][var] if (side, s) in geo else np.nan
-                                       for s in sids], float)
+            V[(side, var)] = np.array(
+                [geo[(side, s)][var] if (side, s) in geo else np.nan for s in sids], float
+            )
     rows = []
     for side, idx in (("india", 0), ("australia", 1)):
         for var in ("area_km2", "dist_km"):
@@ -301,24 +370,48 @@ def run_morphometry():
                 rs[lab], ns[lab] = r, int(ok.sum())
             qs = bh(ps)
             for j, lab in enumerate(LAB):
-                rows.append(dict(side=side, variable=var, mineral=lab, n=ns[lab],
-                                 rho=round(rs[lab], 3), perm_p=round(ps[j], 4),
-                                 q=round(float(qs[j]), 4),
-                                 significant="Yes" if qs[j] < 0.05 else "No"))
-            print("  %-10s %-9s  %s" % (side, var,
-                                        "  ".join("%s %.2f" % (l.split(" ")[0][:4], rs[l])
-                                                  for l in LAB)), flush=True)
+                rows.append(
+                    dict(
+                        side=side,
+                        variable=var,
+                        mineral=lab,
+                        n=ns[lab],
+                        rho=round(rs[lab], 3),
+                        perm_p=round(ps[j], 4),
+                        q=round(float(qs[j]), 4),
+                        significant="Yes" if qs[j] < 0.05 else "No",
+                    )
+                )
+            print(
+                "  %-10s %-9s  %s"
+                % (side, var, "  ".join("%s %.2f" % (l.split(" ")[0][:4], rs[l]) for l in LAB)),
+                flush=True,
+            )
     M = pd.DataFrame(rows)
     M.to_csv(os.path.join(RES, "catchment_morphometry.csv"), index=False)
-    A = pd.DataFrame([dict(side=s, sid=k[1], **geo[k]) for s, k in
-                      [("india", ("india", x)) for x in pairs.india_sid] +
-                      [("australia", ("australia", x)) for x in pairs.aus_sid] if k in geo])
-    print("\ncatchment area km2: india median %.0f (%.0f to %.0f), australia median %.0f (%.0f to %.0f)"
-          % (A[A.side == "india"].area_km2.median(), A[A.side == "india"].area_km2.min(),
-             A[A.side == "india"].area_km2.max(), A[A.side == "australia"].area_km2.median(),
-             A[A.side == "australia"].area_km2.min(), A[A.side == "australia"].area_km2.max()))
-    print("site to centroid km: india median %.0f, australia median %.0f"
-          % (A[A.side == "india"].dist_km.median(), A[A.side == "australia"].dist_km.median()))
+    A = pd.DataFrame(
+        [
+            dict(side=s, sid=k[1], **geo[k])
+            for s, k in [("india", ("india", x)) for x in pairs.india_sid]
+            + [("australia", ("australia", x)) for x in pairs.aus_sid]
+            if k in geo
+        ]
+    )
+    print(
+        "\ncatchment area km2: india median %.0f (%.0f to %.0f), australia median %.0f (%.0f to %.0f)"
+        % (
+            A[A.side == "india"].area_km2.median(),
+            A[A.side == "india"].area_km2.min(),
+            A[A.side == "india"].area_km2.max(),
+            A[A.side == "australia"].area_km2.median(),
+            A[A.side == "australia"].area_km2.min(),
+            A[A.side == "australia"].area_km2.max(),
+        )
+    )
+    print(
+        "site to centroid km: india median %.0f, australia median %.0f"
+        % (A[A.side == "india"].dist_km.median(), A[A.side == "australia"].dist_km.median())
+    )
     pd.set_option("display.width", 260)
     print("\n" + M.to_string(index=False))
     print("\nwrote results/catchment_morphometry.csv")
@@ -336,16 +429,20 @@ def run_confound():
     pairs, pool = build(ngsa())
     sc = scores(pairs, pool)
     geo = {}
-    for side, f in (("india", "pair_catchments_india.geojson"),
-                    ("australia", "pair_catchments_australia.geojson")):
+    for side, f in (
+        ("india", "pair_catchments_india.geojson"),
+        ("australia", "pair_catchments_australia.geojson"),
+    ):
         for ft in json.load(open(os.path.join(RES, f)))["features"]:
             geo[(side, ft["properties"]["sid"])] = float(ft["properties"]["area_km2"])
     area_au = np.array([geo[("australia", s_)] for s_ in pairs.aus_sid], float)
     area_in = np.array([geo[("india", s_)] for s_ in pairs.india_sid], float)
     rows = []
-    for cname, cov in (("Australian catchment area", area_au),
-                       ("Indian catchment area", area_in),
-                       ("both catchment areas", np.column_stack([area_au, area_in]))):
+    for cname, cov in (
+        ("Australian catchment area", area_au),
+        ("Indian catchment area", area_in),
+        ("both catchment areas", np.column_stack([area_au, area_in])),
+    ):
         C = avg_rank(np.atleast_2d(cov.T if cov.ndim > 1 else cov))
         C = C.T if C.shape[0] > 1 else C.reshape(-1, 1)
         X = np.column_stack([np.ones(len(pairs)), C])
@@ -368,11 +465,22 @@ def run_confound():
         qs = bh(ps)
         for j, lab in enumerate(LAB):
             r, p, n = rs[lab]
-            rows.append(dict(controlling_for=cname, mineral=lab, n=n, partial_rho=round(r, 3),
-                             perm_p=round(p, 4), q=round(float(qs[j]), 4),
-                             transfers="Yes" if qs[j] < 0.05 else "No"))
-        print("  controlling for %-26s monazite %.3f (q %.4f)  xenotime %.3f"
-              % (cname, rs[LAB[0]][0], qs[0], rs[LAB[1]][0]), flush=True)
+            rows.append(
+                dict(
+                    controlling_for=cname,
+                    mineral=lab,
+                    n=n,
+                    partial_rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[j]), 4),
+                    transfers="Yes" if qs[j] < 0.05 else "No",
+                )
+            )
+        print(
+            "  controlling for %-26s monazite %.3f (q %.4f)  xenotime %.3f"
+            % (cname, rs[LAB[0]][0], qs[0], rs[LAB[1]][0]),
+            flush=True,
+        )
     D = pd.DataFrame(rows)
     D.to_csv(os.path.join(RES, "catchment_area_partial.csv"), index=False)
     pd.set_option("display.width", 260)

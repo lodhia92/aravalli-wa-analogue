@@ -18,6 +18,7 @@ Run:    python scripts/mineralogical_validation.py
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -29,20 +30,21 @@ from aravalli_wa.stats import perm_p
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
-RES  = os.path.join(HERE, "results"); DR = os.path.join(RES, "drainage")
-NG   = paths.NGSA
-HM   = paths.HMMA
-CACHE= os.path.join(RES, "hmma_grain_counts.csv")
+RES = os.path.join(HERE, "results")
+DR = os.path.join(RES, "drainage")
+NG = paths.NGSA
+HM = paths.HMMA
+CACHE = os.path.join(RES, "hmma_grain_counts.csv")
 AUS_THR = 25.0
 NPERM = 100000
 
 # fingerprint -> (elements used in the paper, HMMA mineral column stem)
 FP = {
-    "Monazite (LREE)":  (["Ce", "Nd", "Pr"], "Monazite"),
-    "Xenotime (HREE)":  (["Dy"],             "Xenotime-Y"),
-    "Zircon":           (["Zr", "Hf"],       "Zircon"),
-    "Ti oxides":        (["Ti"],             "Ilmenite"),
-    "Apatite":          (["P"],              "Apatite"),
+    "Monazite (LREE)": (["Ce", "Nd", "Pr"], "Monazite"),
+    "Xenotime (HREE)": (["Dy"], "Xenotime-Y"),
+    "Zircon": (["Zr", "Hf"], "Zircon"),
+    "Ti oxides": (["Ti"], "Ilmenite"),
+    "Apatite": (["P"], "Apatite"),
 }
 EXTRA_HM = ["Allanite", "Rutile", "Florencite", "Huttonite"]
 
@@ -50,24 +52,40 @@ EXTRA_HM = ["Allanite", "Rutile", "Florencite", "Huttonite"]
 def spearman(x, y):
     xr = pd.Series(x).rank().values
     yr = pd.Series(y).rank().values
-    xr = xr - xr.mean(); yr = yr - yr.mean()
-    d = np.sqrt((xr ** 2).sum() * (yr ** 2).sum())
+    xr = xr - xr.mean()
+    yr = yr - yr.mean()
+    d = np.sqrt((xr**2).sum() * (yr**2).sum())
     return float((xr * yr).sum() / d) if d > 0 else np.nan
 
 
 def load_ngsa():
     with open(NG, encoding="latin-1") as f:
         H = list(csv.reader(f))[11]
-    ELEM = dict(Ce="ICP-MS", Nd="ICP-MS", Pr="ICP-MS", Dy="ICP-MS", Zr="ICP-MS",
-                Hf="ICP-MS", Ti="XRF", P="XRF")
+    ELEM = dict(
+        Ce="ICP-MS",
+        Nd="ICP-MS",
+        Pr="ICP-MS",
+        Dy="ICP-MS",
+        Zr="ICP-MS",
+        Hf="ICP-MS",
+        Ti="XRF",
+        P="XRF",
+    )
     cidx = {}
     for el, meth in ELEM.items():
         for i, c in enumerate(H):
             if c.strip().startswith("%s %s" % (el, meth)):
-                cidx[el] = i; break
+                cidx[el] = i
+                break
     ordered = sorted(cidx.items(), key=lambda kv: kv[1])
-    ng = pd.read_csv(NG, header=None, skiprows=12, usecols=[0] + [v for _, v in ordered],
-                     encoding="latin-1", low_memory=False)
+    ng = pd.read_csv(
+        NG,
+        header=None,
+        skiprows=12,
+        usecols=[0] + [v for _, v in ordered],
+        encoding="latin-1",
+        low_memory=False,
+    )
     ng.columns = ["SITEID"] + [k for k, _ in ordered]
     for c in ng.columns:
         ng[c] = pd.to_numeric(ng[c], errors="coerce")
@@ -118,8 +136,10 @@ def main():
     j = z.merge(hm, on="SITEID", how="inner")
     j["is_pair"] = j.SITEID.isin(pair_ids)
     j.to_csv(os.path.join(RES, "mineralogical_site_scores.csv"), index=False)
-    print("joined to HMMA: %d of %d pool sites; pair sites present: %d of 20"
-          % (len(j), len(pool), int(j.is_pair.sum())))
+    print(
+        "joined to HMMA: %d of %d pool sites; pair sites present: %d of 20"
+        % (len(j), len(pool), int(j.is_pair.sum()))
+    )
 
     rows = []
     scales = [("analogue pairs", j[j.is_pair]), ("drainage-selected pool", j)]
@@ -133,10 +153,18 @@ def main():
                 continue
             rho = spearman(m[name].values, m[pcol].values)
             p = perm_p(m[name].values, m[pcol].values, rho)
-            rows.append(dict(scale=label, fingerprint=name, elements="+".join(els),
-                             hmma_mineral=stem, n=len(m),
-                             pct_sites_present=round(100 * (m[ocol] > 0).mean(), 1),
-                             rho=round(rho, 3), perm_p=round(p, 4)))
+            rows.append(
+                dict(
+                    scale=label,
+                    fingerprint=name,
+                    elements="+".join(els),
+                    hmma_mineral=stem,
+                    n=len(m),
+                    pct_sites_present=round(100 * (m[ocol] > 0).mean(), 1),
+                    rho=round(rho, 3),
+                    perm_p=round(p, 4),
+                )
+            )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "mineralogical_validation.csv"), index=False)
     print()

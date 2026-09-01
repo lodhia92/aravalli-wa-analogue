@@ -44,6 +44,7 @@ Outputs: results/lithological_mixing.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import json
 import os
@@ -60,8 +61,12 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(HERE, "results")
 DOMS, LAB = core.DOMS, core.LAB
 MEASURES = ["dominant_frac", "n_units", "shannon", "basin_frac"]
-NICE = {"dominant_frac": "dominant unit fraction", "n_units": "number of mapped units",
-        "shannon": "Shannon diversity of unit fractions", "basin_frac": "basin-hosted fraction"}
+NICE = {
+    "dominant_frac": "dominant unit fraction",
+    "n_units": "number of mapped units",
+    "shannon": "Shannon diversity of unit fractions",
+    "basin_frac": "basin-hosted fraction",
+}
 
 
 def mixing_table():
@@ -74,13 +79,18 @@ def mixing_table():
         p = sub.area_frac.values
         p = p / p.sum()
         basin = sub.loc[sub.TECTSETTIN.astype(str).str.lower() == "basin", "area_frac"].sum()
-        rows.append(dict(
-            sid=sid, domain=sub.domain.iloc[0], pair_no=int(sub.pair_no.iloc[0]),
-            n_units=len(p),
-            dominant_frac=round(float(p.max()), 4),
-            shannon=round(float(-(p * np.log(p)).sum()), 4),
-            basin_frac=round(float(basin), 4),
-            dominant_unit=sub.loc[sub.area_frac.idxmax(), "TECTNAME"]))
+        rows.append(
+            dict(
+                sid=sid,
+                domain=sub.domain.iloc[0],
+                pair_no=int(sub.pair_no.iloc[0]),
+                n_units=len(p),
+                dominant_frac=round(float(p.max()), 4),
+                shannon=round(float(-(p * np.log(p)).sum()), 4),
+                basin_frac=round(float(basin), 4),
+                dominant_unit=sub.loc[sub.area_frac.idxmax(), "TECTNAME"],
+            )
+        )
     M = pd.DataFrame(rows).sort_values(["domain", "pair_no"]).reset_index(drop=True)
     M.to_csv(os.path.join(RES, "lithological_mixing.csv"), index=False)
     return M
@@ -144,13 +154,23 @@ def run_scores():
         ra, _ = core.spearman_perm(cov, ar)
         for j, lab in enumerate(LAB):
             r, p, n = keep[lab]
-            rows.append(dict(measure=NICE[m], mineral=lab, n=n,
-                             rho_australian_score_vs_measure=round(r, 3),
-                             perm_p=round(p, 4), q=round(float(qs[j]), 4),
-                             significant="Yes" if qs[j] < 0.05 else "No",
-                             rho_measure_vs_catchment_area=round(ra, 3)))
-        print("  %-34s monazite %+.3f (q %.4f)   this measure vs catchment area %+.3f"
-              % (NICE[m], keep[LAB[0]][0], qs[0], ra), flush=True)
+            rows.append(
+                dict(
+                    measure=NICE[m],
+                    mineral=lab,
+                    n=n,
+                    rho_australian_score_vs_measure=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[j]), 4),
+                    significant="Yes" if qs[j] < 0.05 else "No",
+                    rho_measure_vs_catchment_area=round(ra, 3),
+                )
+            )
+        print(
+            "  %-34s monazite %+.3f (q %.4f)   this measure vs catchment area %+.3f"
+            % (NICE[m], keep[LAB[0]][0], qs[0], ra),
+            flush=True,
+        )
     S = pd.DataFrame(rows)
     S.to_csv(os.path.join(RES, "lithological_mixing_scores.csv"), index=False)
     print("\nwrote results/lithological_mixing.csv and results/lithological_mixing_scores.csv")
@@ -167,10 +187,12 @@ def run_confound():
     # Anything close to 0.629 below means the mixing measure carries no information of its own.
     controls.append(("Australian catchment area alone (morphometry anchor)", ar))
     for m in MEASURES:
-        controls.append(("catchment area plus " + NICE[m],
-                         np.column_stack([ar[:, 0], X[m].values])))
-    controls.append(("catchment area plus all four measures",
-                     np.column_stack([ar[:, 0], X[MEASURES].values])))
+        controls.append(
+            ("catchment area plus " + NICE[m], np.column_stack([ar[:, 0], X[m].values]))
+        )
+    controls.append(
+        ("catchment area plus all four measures", np.column_stack([ar[:, 0], X[MEASURES].values]))
+    )
     rows = []
     for cname, cov in controls:
         C = np.column_stack([avg_rank(cov[:, j])[0] for j in range(cov.shape[1])])
@@ -191,11 +213,22 @@ def run_confound():
         qs = bh(ps)
         for j, lab in enumerate(LAB):
             r, p, n = keep[lab]
-            rows.append(dict(controlling_for=cname, mineral=lab, n=n, partial_rho=round(r, 3),
-                             perm_p=round(p, 4), q=round(float(qs[j]), 4),
-                             transfers="Yes" if qs[j] < 0.05 else "No"))
-        print("  controlling for %-34s monazite %.3f (q %.4f)  xenotime %.3f"
-              % (cname, keep[LAB[0]][0], qs[0], keep[LAB[1]][0]), flush=True)
+            rows.append(
+                dict(
+                    controlling_for=cname,
+                    mineral=lab,
+                    n=n,
+                    partial_rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[j]), 4),
+                    transfers="Yes" if qs[j] < 0.05 else "No",
+                )
+            )
+        print(
+            "  controlling for %-34s monazite %.3f (q %.4f)  xenotime %.3f"
+            % (cname, keep[LAB[0]][0], qs[0], keep[LAB[1]][0]),
+            flush=True,
+        )
     C2 = pd.DataFrame(rows)
     C2.to_csv(os.path.join(RES, "lithological_mixing_partial.csv"), index=False)
     pd.set_option("display.width", 260)

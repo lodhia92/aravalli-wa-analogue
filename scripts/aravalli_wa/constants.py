@@ -9,8 +9,8 @@ Author: Bhavik Harish Lodhia, Curtin University
 
 # Permutation convention. A complete unmodified run of a script reproduces its published
 # probabilities exactly; see README.md for the limitation this wording is careful about.
-NPERM = 100000          # relabellings per permutation test
-SEED = 20260827         # generator seed
+NPERM = 100000  # relabellings per permutation test
+SEED = 20260827  # generator seed
 
 # Catchment containment cut-offs, percent of upstream catchment area inside the domain.
 # India is densely sampled with small catchments; Australia is sparsely sampled with large
@@ -20,7 +20,7 @@ AUS_THR_PCT = 25.0
 
 # CI chondrite reference concentrations, ppm, for the europium anomaly and the normalised
 # lanthanum/ytterbium ratio.
-CI_CHONDRITE_PPM = dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
+CI_CHONDRITE_PPM = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
 
 # The six weathering-robust provenance ratios used to match catchments.
 MATCH_RATIOS = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]

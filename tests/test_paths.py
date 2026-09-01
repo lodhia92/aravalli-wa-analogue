@@ -8,6 +8,7 @@ controlled environment.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import importlib
 import os
 
@@ -17,6 +18,7 @@ import pytest
 def paths_rooted_at(directory, monkeypatch):
     monkeypatch.setenv("ARAVALLI_WA_DATA", str(directory))
     import paths
+
     return importlib.reload(paths)
 
 
@@ -46,11 +48,11 @@ class TestRequire:
         paths = paths_rooted_at(tmp_path, monkeypatch)
         os.makedirs(os.path.dirname(paths.NGSA), exist_ok=True)
         open(paths.NGSA, "w").close()
-        paths.require("NGSA")            # must not raise
+        paths.require("NGSA")  # must not raise
 
     def test_an_unknown_name_is_ignored_rather_than_crashing(self, tmp_path, monkeypatch):
         paths = paths_rooted_at(tmp_path, monkeypatch)
-        paths.require("NOT_A_DATASET")   # must not raise
+        paths.require("NOT_A_DATASET")  # must not raise
 
     def test_no_arguments_is_a_no_op(self, tmp_path, monkeypatch):
         paths = paths_rooted_at(tmp_path, monkeypatch)
@@ -58,7 +60,9 @@ class TestRequire:
 
 
 class TestResolution:
-    def test_the_environment_variable_overrides_the_repository_data_directory(self, tmp_path, monkeypatch):
+    def test_the_environment_variable_overrides_the_repository_data_directory(
+        self, tmp_path, monkeypatch
+    ):
         paths = paths_rooted_at(tmp_path, monkeypatch)
         assert paths.DATA == str(tmp_path)
         assert paths.NGSA.startswith(str(tmp_path))

@@ -6,6 +6,7 @@ change to any of them has to be deliberate rather than incidental.
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import pytest
 
 from aravalli_wa import constants as k
@@ -32,8 +33,11 @@ class TestPublishedConventions:
     def test_fingerprint_order_is_the_published_one(self):
         """The order is load-bearing: it decides which permutation block each fingerprint gets."""
         assert k.FINGERPRINT_LABELS == [
-            "monazite (Ce,Nd,Pr)", "xenotime (Dy)", "zircon (Zr,Hf)",
-            "Ti-oxide (Ti)", "apatite (P)",
+            "monazite (Ce,Nd,Pr)",
+            "xenotime (Dy)",
+            "zircon (Zr,Hf)",
+            "Ti-oxide (Ti)",
+            "apatite (P)",
         ]
 
     def test_every_fingerprint_element_is_a_pathfinder_element(self):
@@ -95,4 +99,4 @@ class TestChondriteReference:
         assert set(k.CI_CHONDRITE_PPM) == {"La", "Yb", "Sm", "Eu", "Gd"}
 
     def test_values(self):
-        assert k.CI_CHONDRITE_PPM == dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
+        assert k.CI_CHONDRITE_PPM == dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)

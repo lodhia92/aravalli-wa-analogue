@@ -15,6 +15,7 @@ Output : results/table06_cells.tsv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -22,13 +23,55 @@ import pandas as pd
 
 import paths
 
-csv.field_size_limit(10 ** 7)
+csv.field_size_limit(10**7)
 OUT = os.path.join(paths.RESULTS, "table06_cells.tsv")
 DASH = "–"
-ELS = ["Si", "Ti", "Al", "Fe", "Mn", "Mg", "Ca", "Na", "K", "P", "Sc", "V", "Cr", "Co", "Ni",
-       "Cu", "Zn", "Ga", "Rb", "Sr", "Y", "Zr", "Nb", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
-       "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Yb", "Lu", "Hf", "Ta", "Pb", "Th", "U"]
-STEM = {"Fe": "FeT"}          # the survey reports total iron under FeT
+ELS = [
+    "Si",
+    "Ti",
+    "Al",
+    "Fe",
+    "Mn",
+    "Mg",
+    "Ca",
+    "Na",
+    "K",
+    "P",
+    "Sc",
+    "V",
+    "Cr",
+    "Co",
+    "Ni",
+    "Cu",
+    "Zn",
+    "Ga",
+    "Rb",
+    "Sr",
+    "Y",
+    "Zr",
+    "Nb",
+    "Cs",
+    "Ba",
+    "La",
+    "Ce",
+    "Pr",
+    "Nd",
+    "Sm",
+    "Eu",
+    "Gd",
+    "Tb",
+    "Dy",
+    "Ho",
+    "Er",
+    "Yb",
+    "Lu",
+    "Hf",
+    "Ta",
+    "Pb",
+    "Th",
+    "U",
+]
+STEM = {"Fe": "FeT"}  # the survey reports total iron under FeT
 
 
 def find(header, el):
@@ -56,8 +99,9 @@ def main():
     missing = [el for el, i in idx.items() if i is None]
     assert not missing, f"no total-suite column for {missing}"
     use = sorted(set(idx.values()) | {0, 7})
-    ng = pd.read_csv(paths.NGSA, header=None, skiprows=12, usecols=use, encoding="latin-1",
-                     low_memory=False)
+    ng = pd.read_csv(
+        paths.NGSA, header=None, skiprows=12, usecols=use, encoding="latin-1", low_memory=False
+    )
     ng.columns = [header[i] for i in use]
     ng["SITEID"] = pd.to_numeric(ng[header[0]], errors="coerce").astype("Int64").astype(str)
     ng["SAMPLEID"] = ng[header[7]].astype(str).str.strip()
@@ -72,8 +116,7 @@ def main():
     rows = [["Variable"] + [str(i) for i in range(1, len(cols) + 1)]]
     for el in ELS:
         name = header[idx[el]]
-        rows.append([f"{el} (ppm)"] +
-                    [fmt(c[name]) for c in cols])
+        rows.append([f"{el} (ppm)"] + [fmt(c[name]) for c in cols])
     with open(OUT, "w", newline="", encoding="utf8") as fh:
         csv.writer(fh, delimiter="\t").writerows(rows)
     print(f"wrote {OUT} ({len(rows) - 1} variables x {len(cols)} samples)")

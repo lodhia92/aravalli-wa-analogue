@@ -33,6 +33,7 @@ Output: results/sandmata_complex.geojson
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import json
 import os
 
@@ -46,8 +47,50 @@ from shapely.ops import unary_union
 def to_lonlat(x, y):
     return (d * x + e * y + f, a * x + b * y + c)
 
+
 def main():
-    global A, B, FULL, G, H, HERE, LAT, LON, OUT, R, W, _, a, area, b, boxes, c, coords, d, e, f, gj, i, j, ll, m, mask, mp, p, parts, poly, r, rgb, rings, s, tan, v, x, xs, y, ys
+    global \
+        A, \
+        B, \
+        FULL, \
+        G, \
+        H, \
+        HERE, \
+        LAT, \
+        LON, \
+        OUT, \
+        R, \
+        W, \
+        _, \
+        a, \
+        area, \
+        b, \
+        boxes, \
+        c, \
+        coords, \
+        d, \
+        e, \
+        f, \
+        gj, \
+        i, \
+        j, \
+        ll, \
+        m, \
+        mask, \
+        mp, \
+        p, \
+        parts, \
+        poly, \
+        r, \
+        rgb, \
+        rings, \
+        s, \
+        tan, \
+        v, \
+        x, \
+        xs, \
+        y, \
+        ys
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     FULL = os.path.join(HERE, "digitising", "ghosh2026_fig1a_FULL.png")
     OUT = os.path.join(HERE, "results", "sandmata_complex.geojson")
@@ -62,36 +105,53 @@ def main():
     xs = np.arange(W)[None, :].repeat(H, 0)
     ys = np.arange(H)[:, None].repeat(W, 1)
     area = (xs > 125) & (xs < 1205) & (ys > 220) & (ys < 1825)
-    area &= ~((xs < 560) & (ys < 660))      # India inset (top-left)
-    area &= ~((xs > 800) & (ys > 1555))     # legend box (bottom)
+    area &= ~((xs < 560) & (ys < 660))  # India inset (top-left)
+    area &= ~((xs > 800) & (ys > 1555))  # legend box (bottom)
     tan = (R > G) & (G >= B - 3) & ((R - B) >= 22) & ((R - B) <= 85) & (R >= 175) & (G >= 150)
     mask = tan & area
     m = Image.fromarray((mask * 255).astype("uint8"))
-    m = m.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(5))
+    m = (
+        m.filter(ImageFilter.MinFilter(3))
+        .filter(ImageFilter.MaxFilter(7))
+        .filter(ImageFilter.MinFilter(5))
+    )
     mask = np.asarray(m) > 127
     s = 6
-    boxes = [shbox(i, j, i + s, j + s)
-             for j in range(0, H - s, s) for i in range(0, W - s, s)
-             if mask[j:j + s, i:i + s].mean() > 0.5]
+    boxes = [
+        shbox(i, j, i + s, j + s)
+        for j in range(0, H - s, s)
+        for i in range(0, W - s, s)
+        if mask[j : j + s, i : i + s].mean() > 0.5
+    ]
     poly = unary_union(boxes).simplify(4)
     parts = list(poly.geoms) if poly.geom_type == "MultiPolygon" else [poly]
     parts = [p for p in parts if p.area > 1500]
     coords, rings = [], []
     for p in parts:
         ll = [list(map(float, to_lonlat(x, y))) for x, y in p.exterior.coords]
-        coords.append([ll]); rings.append(ll)
-    gj = {"type": "FeatureCollection",
-          "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
-          "features": [{"type": "Feature",
-                        "properties": {"name": "Sandmata Complex",
-                                       "source": "Auto colour-segmented + graticule-georeferenced from Ghosh et al. 2026 Fig 1a",
-                                       "uncertainty_km": 10},
-                        "geometry": {"type": "MultiPolygon", "coordinates": coords}}]}
+        coords.append([ll])
+        rings.append(ll)
+    gj = {
+        "type": "FeatureCollection",
+        "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "name": "Sandmata Complex",
+                    "source": "Auto colour-segmented + graticule-georeferenced from Ghosh et al. 2026 Fig 1a",
+                    "uncertainty_km": 10,
+                },
+                "geometry": {"type": "MultiPolygon", "coordinates": coords},
+            }
+        ],
+    }
     json.dump(gj, open(OUT, "w"))
     mp = MultiPolygon([Polygon(r) for r in rings]).buffer(0)
     print("wrote", OUT)
     print("parts:", len(parts), "| bbox lon/lat:", [round(v, 3) for v in mp.bounds])
     print("contains Bhilwara:", mp.contains(Point(74.636, 25.346)))
+
 
 if __name__ == "__main__":
     main()

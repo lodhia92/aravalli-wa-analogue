@@ -29,6 +29,7 @@ Outputs: results/hree_transfer.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import os
 
 import containment_sensitivity as cont
@@ -72,8 +73,11 @@ def main():
     for lab, want in PUB_RHO.items():
         got = round(res[lab][0], 3)
         assert got == want, f"published anchor moved: {lab} {got} != {want}"
-    print("published anchor holds after extending the element list: monazite %.3f, Dy %.3f"
-          % (res[pub_labels[0]][0], res[pub_labels[1]][0]), flush=True)
+    print(
+        "published anchor holds after extending the element list: monazite %.3f, Dy %.3f"
+        % (res[pub_labels[0]][0], res[pub_labels[1]][0]),
+        flush=True,
+    )
 
     q_pub_family = dict(zip(pub_labels, bh([res[l][1] for l in pub_labels])))
     q_all_family = dict(zip(all_labels, bh([res[l][1] for l in all_labels])))
@@ -83,15 +87,20 @@ def main():
     for lab in all_labels:
         r, p, n = res[lab]
         is_new = lab in NEW
-        rows.append(dict(
-            fingerprint=lab,
-            elements="+".join(NEW[lab]) if is_new else "+".join(core.MIN[lab]),
-            status="broadened heavy rare-earth variant" if is_new else "published fingerprint",
-            n_pairs=n, rho=round(r, 3), perm_p=round(p, 4),
-            q_published_family_of_five=("" if is_new else round(float(q_pub_family[lab]), 4)),
-            q_new_variants_alone=(round(float(q_new_only[lab]), 4) if is_new else ""),
-            q_combined_family_of_nine=round(float(q_all_family[lab]), 4),
-            transfers_combined_family="Yes" if q_all_family[lab] < 0.05 else "No"))
+        rows.append(
+            dict(
+                fingerprint=lab,
+                elements="+".join(NEW[lab]) if is_new else "+".join(core.MIN[lab]),
+                status="broadened heavy rare-earth variant" if is_new else "published fingerprint",
+                n_pairs=n,
+                rho=round(r, 3),
+                perm_p=round(p, 4),
+                q_published_family_of_five=("" if is_new else round(float(q_pub_family[lab]), 4)),
+                q_new_variants_alone=(round(float(q_new_only[lab]), 4) if is_new else ""),
+                q_combined_family_of_nine=round(float(q_all_family[lab]), 4),
+                transfers_combined_family="Yes" if q_all_family[lab] < 0.05 else "No",
+            )
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "hree_transfer.csv"), index=False)
     pd.set_option("display.width", 300)
@@ -100,14 +109,22 @@ def main():
 
     print("\nsummary")
     best = max(new_labels, key=lambda l: res[l][0])
-    print("  strongest new heavy rare-earth variant: %s, rho %.3f, q %.4f in the family of nine"
-          % (best, res[best][0], q_all_family[best]))
-    print("  any new variant clearing q<0.05 in the family of nine: %s"
-          % (", ".join(l for l in new_labels if q_all_family[l] < 0.05) or "none"))
-    print("  any new variant clearing q<0.05 even in a family of four: %s"
-          % (", ".join(l for l in new_labels if q_new_only[l] < 0.05) or "none"))
-    print("  monazite in the family of nine: rho %.3f, q %.4f"
-          % (res[pub_labels[0]][0], q_all_family[pub_labels[0]]))
+    print(
+        "  strongest new heavy rare-earth variant: %s, rho %.3f, q %.4f in the family of nine"
+        % (best, res[best][0], q_all_family[best])
+    )
+    print(
+        "  any new variant clearing q<0.05 in the family of nine: %s"
+        % (", ".join(l for l in new_labels if q_all_family[l] < 0.05) or "none")
+    )
+    print(
+        "  any new variant clearing q<0.05 even in a family of four: %s"
+        % (", ".join(l for l in new_labels if q_new_only[l] < 0.05) or "none")
+    )
+    print(
+        "  monazite in the family of nine: rho %.3f, q %.4f"
+        % (res[pub_labels[0]][0], q_all_family[pub_labels[0]])
+    )
     print("\nwrote results/hree_transfer.csv")
 
 

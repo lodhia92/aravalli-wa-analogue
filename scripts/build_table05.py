@@ -11,6 +11,7 @@ Output : results/table05_cells.tsv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -21,9 +22,41 @@ import paths
 OUT = os.path.join(paths.RESULTS, "table05_cells.tsv")
 DASH = "–"
 OXIDES = ["SiO2", "TiO2", "Al2O3", "Fe2O3", "MnO", "MgO", "CaO", "Na2O", "K2O", "P2O5"]
-TRACE = ["Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga", "Rb", "Sr", "Y", "Zr", "Nb", "Cs",
-         "Ba", "La", "Ce", "Pr", "Nd", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Yb", "Lu",
-         "Hf", "Ta", "Pb", "Th", "U"]
+TRACE = [
+    "Sc",
+    "V",
+    "Cr",
+    "Co",
+    "Ni",
+    "Cu",
+    "Zn",
+    "Ga",
+    "Rb",
+    "Sr",
+    "Y",
+    "Zr",
+    "Nb",
+    "Cs",
+    "Ba",
+    "La",
+    "Ce",
+    "Pr",
+    "Nd",
+    "Sm",
+    "Eu",
+    "Gd",
+    "Tb",
+    "Dy",
+    "Ho",
+    "Er",
+    "Yb",
+    "Lu",
+    "Hf",
+    "Ta",
+    "Pb",
+    "Th",
+    "U",
+]
 
 
 def label(el):

@@ -20,6 +20,7 @@ Output: the table at paths.NGCM_TABLE
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import argparse
 import glob
 import os
@@ -33,7 +34,7 @@ import paths
 
 warnings.filterwarnings("ignore")
 
-SKIPPED = []   # workbooks that could not be read, reported at the end
+SKIPPED = []  # workbooks that could not be read, reported at the end
 CACHE = os.path.join(paths.RESULTS, "_ngcm_{}.csv")
 PACKAGES = ("*package A*XRF*.xlsx", "*package*ICPMS*.xlsx", "*package B*Other*.xlsx")
 ELEMENT = re.compile(r"^[A-Z][a-z]?[0-9]?[A-Za-z0-9]*$")
@@ -44,12 +45,17 @@ def sheet_elements(path):
     """One row per sample key, one column per element reported in this package."""
     dp = pd.read_excel(path, sheet_name="GC Datapoints", header=2, engine="openpyxl")
     cc = pd.read_excel(path, sheet_name="GC Concentrations", header=2, engine="openpyxl")
-    keep = [c for c in cc.columns
-            if str(c).strip() not in SKIP and ELEMENT.match(str(c).strip())
-            and "Uncertainty" not in str(c) and "Measured Mass" not in str(c)]
+    keep = [
+        c
+        for c in cc.columns
+        if str(c).strip() not in SKIP
+        and ELEMENT.match(str(c).strip())
+        and "Uncertainty" not in str(c)
+        and "Measured Mass" not in str(c)
+    ]
     out = cc[keep].copy()
     out.columns = [str(c).strip() for c in keep]
-    out["sample"] = dp["Sample"].values[:len(out)]
+    out["sample"] = dp["Sample"].values[: len(out)]
     return out
 
 
@@ -78,9 +84,15 @@ def load_state(state):
         merged["toposheet"] = toposheet
         frames.append(merged)
         for f in glob.glob(os.path.join(sheet_dir, "*samples.metadata*.xlsx")):
-            m = pd.read_excel(f, sheet_name="Samples", header=None, skiprows=3,
-                              usecols=[0, 6, 7], names=["sample", "LAT", "LON"],
-                              engine="openpyxl")
+            m = pd.read_excel(
+                f,
+                sheet_name="Samples",
+                header=None,
+                skiprows=3,
+                usecols=[0, 6, 7],
+                names=["sample", "LAT", "LON"],
+                engine="openpyxl",
+            )
             meta.append(m)
     if not frames:
         raise SystemExit(f"no survey packages found under {os.path.join(paths.NGCM_RAW, state)}")

@@ -23,6 +23,7 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import json
 import os
@@ -32,7 +33,7 @@ import numpy as np
 import paths
 from aravalli_wa.geometry import geom_to_path
 
-csv.field_size_limit(10 ** 7)
+csv.field_size_limit(10**7)
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
@@ -40,14 +41,23 @@ RES = os.path.join(HERE, "results")
 MINEDEX = paths.MINEDEX
 
 # columns carried through to the output
-KEEP = ["SiteCode", "ShortTitle", "Title", "Type", "SubType", "Stage",
-        "Commodities", "TargetCommodityGroups", "MineralizationStyle",
-        "Latitude", "Longitude"]
+KEEP = [
+    "SiteCode",
+    "ShortTitle",
+    "Title",
+    "Type",
+    "SubType",
+    "Stage",
+    "Commodities",
+    "TargetCommodityGroups",
+    "MineralizationStyle",
+    "Latitude",
+    "Longitude",
+]
 
 
 def is_ree(rec):
-    s = ((rec.get("Commodities") or "") + " " +
-         (rec.get("TargetCommodityGroups") or "")).upper()
+    s = ((rec.get("Commodities") or "") + " " + (rec.get("TargetCommodityGroups") or "")).upper()
     return "RARE EARTH" in s
 
 
@@ -61,7 +71,8 @@ def main():
             if not is_ree(rec):
                 continue
             try:
-                lat = float(rec["Latitude"]); lon = float(rec["Longitude"])
+                lat = float(rec["Latitude"])
+                lon = float(rec["Longitude"])
             except (TypeError, ValueError):
                 # A MINEDEX record with no usable position. Counted, not dropped in silence.
                 no_position += 1
@@ -69,7 +80,9 @@ def main():
             sites.append((lon, lat, rec))
     print("MINEDEX rare-earth sites with coordinates: %d" % len(sites))
     if no_position:
-        print("  rare-earth records skipped for a missing or non-numeric position: %d" % no_position)
+        print(
+            "  rare-earth records skipped for a missing or non-numeric position: %d" % no_position
+        )
 
     # de-duplicate on (ShortTitle, rounded position): MINEDEX repeats group/infrastructure rows
     seen, uniq = set(), []
@@ -90,16 +103,18 @@ def main():
         if cpath is None:
             continue
         x0, y0, x1, y1 = cbox
-        near = np.where((pts[:, 0] >= x0) & (pts[:, 0] <= x1) &
-                        (pts[:, 1] >= y0) & (pts[:, 1] <= y1))[0]
+        near = np.where(
+            (pts[:, 0] >= x0) & (pts[:, 0] <= x1) & (pts[:, 1] >= y0) & (pts[:, 1] <= y1)
+        )[0]
         if near.size == 0:
             continue
         ins = cpath.contains_points(pts[near])
         for j in near[ins]:
             rec = uniq[j][2]
             row = {k: rec.get(k, "") for k in KEEP}
-            row.update(pair_no=p["pair_no"], domain=p["domain"], sid=p["sid"],
-                       catchment_km2=p["area_km2"])
+            row.update(
+                pair_no=p["pair_no"], domain=p["domain"], sid=p["sid"], catchment_km2=p["area_km2"]
+            )
             rows.append(row)
 
     out = os.path.join(RES, "ree_occurrences.csv")
@@ -128,8 +143,10 @@ def main():
         w.writerow(["domain", "n_catchments", "n_catchments_with_ree_site", "n_ree_sites_inside"])
         for d, v in sorted(summ.items()):
             w.writerow([d, v["catchments"], v["catchments_with_ree"], v["sites"]])
-            print("  %-18s %d catchments, %d contain a rare-earth site, %d sites inside"
-                  % (d, v["catchments"], v["catchments_with_ree"], v["sites"]))
+            print(
+                "  %-18s %d catchments, %d contain a rare-earth site, %d sites inside"
+                % (d, v["catchments"], v["catchments_with_ree"], v["sites"])
+            )
     print("wrote %s" % outs)
 
     # where do the named deposits of interest actually sit?
@@ -137,11 +154,17 @@ def main():
     for lon, lat, rec in uniq:
         t = (rec["ShortTitle"] or "").upper()
         if "WELD" in t or "YANGIBANA" in t or "GIFFORD" in t or "BALD HILL" in t:
-            inside = [f["properties"]["pair_no"] for f in feats
-                      if (lambda cp: cp is not None and cp.contains_point((lon, lat)))(
-                          geom_to_path(f["geometry"])[0])]
-            print("  %-34s %8.3f %8.3f  inside pairs: %s"
-                  % (rec["ShortTitle"][:34], lon, lat, inside or "none"))
+            inside = [
+                f["properties"]["pair_no"]
+                for f in feats
+                if (lambda cp: cp is not None and cp.contains_point((lon, lat)))(
+                    geom_to_path(f["geometry"])[0]
+                )
+            ]
+            print(
+                "  %-34s %8.3f %8.3f  inside pairs: %s"
+                % (rec["ShortTitle"][:34], lon, lat, inside or "none")
+            )
 
 
 if __name__ == "__main__":

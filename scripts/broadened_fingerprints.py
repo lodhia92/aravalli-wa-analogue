@@ -28,6 +28,7 @@ Outputs: results/broadened_fingerprints.csv
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import os
 
 import containment_sensitivity as cont
@@ -55,10 +56,22 @@ DEMO = {
     "Diagnostic: Th alone (a matching variable)": ["Th"],
     "Diagnostic: Zircon Zr+Hf+U+Th (contains Th)": ["Zr", "Hf", "U", "Th"],
 }
-GROUP = {"Apatite, P+Ca": "apatite", "Apatite, P+Sr": "apatite", "Apatite, P+Ca+Sr": "apatite",
-         "Titanium oxides, Ti+Ta": "titanium oxides", "Zircon, Zr+Hf+U": "zircon"}
+GROUP = {
+    "Apatite, P+Ca": "apatite",
+    "Apatite, P+Sr": "apatite",
+    "Apatite, P+Ca+Sr": "apatite",
+    "Titanium oxides, Ti+Ta": "titanium oxides",
+    "Zircon, Zr+Hf+U": "zircon",
+}
 BASE = {"apatite": "apatite (P)", "titanium oxides": "Ti-oxide (Ti)", "zircon": "zircon (Zr,Hf)"}
-EXTRA = ["Ca", "Sr", "Nb", "Ta", "U", "Th"]   # Th is used by the zircon variant and is not in the published PATH
+EXTRA = [
+    "Ca",
+    "Sr",
+    "Nb",
+    "Ta",
+    "U",
+    "Th",
+]  # Th is used by the zircon variant and is not in the published PATH
 PUB_RHO = {"monazite (Ce,Nd,Pr)": 0.696, "xenotime (Dy)": 0.506}
 
 
@@ -111,19 +124,31 @@ def main():
         is_new = lab in NEW
         is_demo = lab in DEMO
         g = GROUP.get(lab) or {v: k for k, v in BASE.items()}.get(lab, "")
-        rows.append(dict(
-            fingerprint=lab,
-            elements="+".join((DEMO if is_demo else NEW if is_new else core.MIN)[lab]),
-            group=g,
-            status=("matching-element diagnostic, excluded from correction" if is_demo
-                    else "broadened variant" if is_new else "published fingerprint"),
-            n_pairs=n, rho=round(r, 3), perm_p=round(p, 4),
-            q_published_family_of_five=("" if is_new or is_demo
-                                        else round(float(q_pub[lab]), 4)),
-            q_within_its_own_mineral=(round(float(q_grp[lab]), 4) if lab in q_grp else ""),
-            q_combined_family=("" if is_demo else round(float(q_all[lab]), 4)),
-            transfers=("not corrected, see status" if is_demo
-                       else "Yes" if q_all[lab] < 0.05 else "No")))
+        rows.append(
+            dict(
+                fingerprint=lab,
+                elements="+".join((DEMO if is_demo else NEW if is_new else core.MIN)[lab]),
+                group=g,
+                status=(
+                    "matching-element diagnostic, excluded from correction"
+                    if is_demo
+                    else "broadened variant"
+                    if is_new
+                    else "published fingerprint"
+                ),
+                n_pairs=n,
+                rho=round(r, 3),
+                perm_p=round(p, 4),
+                q_published_family_of_five=(
+                    "" if is_new or is_demo else round(float(q_pub[lab]), 4)
+                ),
+                q_within_its_own_mineral=(round(float(q_grp[lab]), 4) if lab in q_grp else ""),
+                q_combined_family=("" if is_demo else round(float(q_all[lab]), 4)),
+                transfers=(
+                    "not corrected, see status" if is_demo else "Yes" if q_all[lab] < 0.05 else "No"
+                ),
+            )
+        )
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RES, "broadened_fingerprints.csv"), index=False)
     pd.set_option("display.width", 300)
@@ -136,12 +161,20 @@ def main():
     for g in ("apatite", "titanium oxides", "zircon"):
         base = BASE[g]
         members = [l for l in new if GROUP[l] == g]
-        print("  %-16s published %+.3f -> broadened %s"
-              % (g, res[base][0],
-                 ", ".join("%s %+.3f (q %.3f)" % (l.split(", ")[1], res[l][0], q_all[l])
-                           for l in members)))
-    print("  any broadened variant clearing q<0.05: %s"
-          % (", ".join(l for l in new if q_all[l] < 0.05) or "none"))
+        print(
+            "  %-16s published %+.3f -> broadened %s"
+            % (
+                g,
+                res[base][0],
+                ", ".join(
+                    "%s %+.3f (q %.3f)" % (l.split(", ")[1], res[l][0], q_all[l]) for l in members
+                ),
+            )
+        )
+    print(
+        "  any broadened variant clearing q<0.05: %s"
+        % (", ".join(l for l in new if q_all[l] < 0.05) or "none")
+    )
     print("\nwrote results/broadened_fingerprints.csv")
 
 

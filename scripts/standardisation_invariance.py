@@ -35,6 +35,7 @@ Run
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
+
 import csv
 import os
 
@@ -56,6 +57,7 @@ def spearman_perm(a, b):
     null = np.abs(corr_rows(rb[_BANK[n]], ra))
     return rho, (np.sum(null >= abs(rho)) + 1) / (NPERM + 1)
 
+
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
     d = d[d.pct_in_domain >= IN_THR]
@@ -64,11 +66,13 @@ def india(name):
     m["sid"] = name + "_" + m.k
     return m
 
+
 def findcol(el):
     for meth in ("ICP-MS", "XRF"):
         for i, c in enumerate(H):
             if c.strip().startswith(f"{el} {meth}"):
                 return i
+
 
 def aus(path, label):
     d = pd.read_csv(path)
@@ -78,9 +82,11 @@ def aus(path, label):
     m["sid"] = [f"{label}_{i}" for i in m.index]
     return m.reset_index()
 
+
 def mad(x):
     m = np.nanmedian(x, axis=0)
     return np.nanmedian(np.abs(x - m), axis=0) * 1.4826
+
 
 def transform(name):
     """Return the per-element transformed values of the paired sites, Indian then Australian."""
@@ -92,40 +98,146 @@ def transform(name):
         both = pd.concat([LI, LA])
         return ((li - both.mean()) / both.std(ddof=0)), ((la - both.mean()) / both.std(ddof=0))
     if name == "robust within-survey standardisation (median, MAD)":
-        return (((li - np.nanmedian(LI, axis=0)) / mad(LI.values)),
-                ((la - np.nanmedian(LA, axis=0)) / mad(LA.values)))
+        return (
+            ((li - np.nanmedian(LI, axis=0)) / mad(LI.values)),
+            ((la - np.nanmedian(LA, axis=0)) / mad(LA.values)),
+        )
     if name == "within-survey percentile rank":
         out = []
         for pool, sub in ((LI, li), (LA, la)):
             r = pd.DataFrame(index=sub.index, columns=PATH, dtype=float)
             for e in PATH:
                 v = pool[e].dropna().values
-                r[e] = [np.nan if not np.isfinite(x) else (np.sum(v <= x) / (len(v) + 1.0))
-                        for x in sub[e].values]
+                r[e] = [
+                    np.nan if not np.isfinite(x) else (np.sum(v <= x) / (len(v) + 1.0))
+                    for x in sub[e].values
+                ]
             out.append(r)
         return out[0], out[1]
     raise ValueError(name)
 
+
 def main():
-    global AUS_THR, Av, CI, DR, H, HERE, IN_THR, Iv, LA, LAB, LI, MATCH, MIN, NG, NPERM, O, P, PATH, PROJ, RES, TA, TI, TREATMENTS, _, _BANK, a, acn, adf, ar, b, bi, c, cidx, d, da, di, dom, e, el, els, f, ic, idf, k, l, la, lab, li, ma, mang, mi, n, ng, ngcm_all, ngsa_all, off, ok, ordered, out, p, pairs, qs, r, ratio, res, rng, rows, sa, sand, si, t, v, wapp, yiln, za, zi
-    csv.field_size_limit(10 ** 7)
+    global \
+        AUS_THR, \
+        Av, \
+        CI, \
+        DR, \
+        H, \
+        HERE, \
+        IN_THR, \
+        Iv, \
+        LA, \
+        LAB, \
+        LI, \
+        MATCH, \
+        MIN, \
+        NG, \
+        NPERM, \
+        O, \
+        P, \
+        PATH, \
+        PROJ, \
+        RES, \
+        TA, \
+        TI, \
+        TREATMENTS, \
+        _, \
+        _BANK, \
+        a, \
+        acn, \
+        adf, \
+        ar, \
+        b, \
+        bi, \
+        c, \
+        cidx, \
+        d, \
+        da, \
+        di, \
+        dom, \
+        e, \
+        el, \
+        els, \
+        f, \
+        ic, \
+        idf, \
+        k, \
+        l, \
+        la, \
+        lab, \
+        li, \
+        ma, \
+        mang, \
+        mi, \
+        n, \
+        ng, \
+        ngcm_all, \
+        ngsa_all, \
+        off, \
+        ok, \
+        ordered, \
+        out, \
+        p, \
+        pairs, \
+        qs, \
+        r, \
+        ratio, \
+        res, \
+        rng, \
+        rows, \
+        sa, \
+        sand, \
+        si, \
+        t, \
+        v, \
+        wapp, \
+        yiln, \
+        za, \
+        zi
+    csv.field_size_limit(10**7)
     HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJ = os.path.dirname(os.path.dirname(HERE))
     RES = os.path.join(HERE, "results")
     DR = os.path.join(RES, "drainage")
     IN_THR, AUS_THR = 50.0, 25.0
-    CI = dict(La=.237, Yb=.170, Sm=.148, Eu=.0580, Gd=.199)
+    CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
     MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
     PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
-    MIN = {"monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"], "xenotime (Dy)": ["Dy"],
-           "zircon (Zr,Hf)": ["Zr", "Hf"], "Ti-oxide (Ti)": ["Ti"], "apatite (P)": ["P"]}
+    MIN = {
+        "monazite (Ce,Nd,Pr)": ["Ce", "Nd", "Pr"],
+        "xenotime (Dy)": ["Dy"],
+        "zircon (Zr,Hf)": ["Zr", "Hf"],
+        "Ti-oxide (Ti)": ["Ti"],
+        "apatite (P)": ["P"],
+    }
     LAB = list(MIN)
     NPERM = 100000
     rng = np.random.default_rng(20260827)
     _BANK = {}
     ar = pd.read_csv(paths.NGCM_TABLE)
-    for c in ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y", "TiO2", "P2O5",
-              "Zr", "Hf", "Ce", "Nd", "Pr", "Dy", "LAT", "LON"]:
+    for c in [
+        "Th",
+        "Sc",
+        "Co",
+        "La",
+        "Eu",
+        "Sm",
+        "Gd",
+        "Yb",
+        "Nb",
+        "Y",
+        "TiO2",
+        "P2O5",
+        "Zr",
+        "Hf",
+        "Ce",
+        "Nd",
+        "Pr",
+        "Dy",
+        "LAT",
+        "LON",
+    ]:
         ar[c] = pd.to_numeric(ar[c], errors="coerce")
     ar["Ti"] = ar["TiO2"] * WT_PCT_TO_MG_KG * TI_MASS_FRACTION_OF_TIO2
     ar["P"] = ar["P2O5"] * WT_PCT_TO_MG_KG * P_MASS_FRACTION_OF_P2O5
@@ -134,17 +246,26 @@ def main():
     NG = paths.NGSA
     with open(NG, encoding="latin-1") as f:
         H = list(csv.reader(f))[11]
-    cidx = {el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm",
-                                       "Gd"] + PATH}
+    cidx = {
+        el: findcol(el) for el in ["Th", "Sc", "Nb", "Y", "La", "Yb", "Co", "Eu", "Sm", "Gd"] + PATH
+    }
     ordered = sorted(((k, v) for k, v in cidx.items() if v is not None), key=lambda kv: kv[1])
-    ng = pd.read_csv(NG, header=None, skiprows=12, usecols=[0] + [v for _, v in ordered],
-                     encoding="latin-1", low_memory=False)
+    ng = pd.read_csv(
+        NG,
+        header=None,
+        skiprows=12,
+        usecols=[0] + [v for _, v in ordered],
+        encoding="latin-1",
+        low_memory=False,
+    )
     ng.columns = ["SITEID"] + [k for k, _ in ordered]
     for c in ng.columns:
         ng[c] = pd.to_numeric(ng[c], errors="coerce")
     ng = ng.groupby("SITEID").median(numeric_only=True)
-    wapp, yiln = aus(os.path.join(DR, "wa_palaeoprot_contained.csv"), "WA_PP"), \
-        aus(os.path.join(DR, "yilgarn_contained.csv"), "Y+N")
+    wapp, yiln = (
+        aus(os.path.join(DR, "wa_palaeoprot_contained.csv"), "WA_PP"),
+        aus(os.path.join(DR, "yilgarn_contained.csv"), "Y+N"),
+    )
     ngcm_all, ngsa_all = pd.concat([sand, mang]), pd.concat([wapp, yiln])
     mi, si = logr(ngcm_all).mean(), logr(ngcm_all).std(ddof=0)
     ma, sa = logr(ngsa_all).mean(), logr(ngsa_all).std(ddof=0)
@@ -157,23 +278,35 @@ def main():
             di = np.sqrt(((Iv - Av[a]) ** 2).sum(1))
             bi = int(di.argmin())
             da = np.sqrt(((Av - Iv[bi]) ** 2).sum(1))
-            rows.append(dict(domain=dom, india_sid=idf.loc[zi.index[bi], "sid"],
-                             aus_sid=adf.loc[za.index[a], "sid"], dist=float(di[bi]),
-                             mnn=(int(da.argmin()) == a)))
+            rows.append(
+                dict(
+                    domain=dom,
+                    india_sid=idf.loc[zi.index[bi], "sid"],
+                    aus_sid=adf.loc[za.index[a], "sid"],
+                    dist=float(di[bi]),
+                    mnn=(int(da.argmin()) == a),
+                )
+            )
     P = pd.DataFrame(rows)
-    pairs = pd.concat([P[P.domain == d].sort_values(["mnn", "dist"], ascending=[False, True]).head(10)
-                       for d in ("Palaeoproterozoic", "Archaean")]).reset_index(drop=True)
+    pairs = pd.concat(
+        [
+            P[P.domain == d].sort_values(["mnn", "dist"], ascending=[False, True]).head(10)
+            for d in ("Palaeoproterozoic", "Archaean")
+        ]
+    ).reset_index(drop=True)
     print("pairs built: %d" % len(pairs), flush=True)
     ic, acn = ngcm_all.set_index("sid"), ngsa_all.set_index("sid")
     LI = np.log(ngcm_all[PATH].where(ngcm_all[PATH] > 0))
     LA = np.log(ngsa_all[PATH].where(ngsa_all[PATH] > 0))
     li = np.log(ic.loc[pairs.india_sid, PATH].where(ic.loc[pairs.india_sid, PATH] > 0))
     la = np.log(acn.loc[pairs.aus_sid, PATH].where(acn.loc[pairs.aus_sid, PATH] > 0))
-    TREATMENTS = ["within-survey z-score of log abundance (published)",
-                  "raw log abundance, no standardisation",
-                  "pooled standardisation over both surveys",
-                  "robust within-survey standardisation (median, MAD)",
-                  "within-survey percentile rank"]
+    TREATMENTS = [
+        "within-survey z-score of log abundance (published)",
+        "raw log abundance, no standardisation",
+        "pooled standardisation over both surveys",
+        "robust within-survey standardisation (median, MAD)",
+        "within-survey percentile rank",
+    ]
     out = []
     for t in TREATMENTS:
         TI, TA = transform(t)
@@ -188,21 +321,38 @@ def main():
         qs = dict(zip(LAB, bh([res[l][1] for l in LAB])))
         for lab in LAB:
             r, p, n = res[lab]
-            out.append(dict(treatment=t, mineral=lab, n_elements=len(MIN[lab]), n=n,
-                            rho=round(r, 3), perm_p=round(p, 4), q=round(float(qs[lab]), 4),
-                            transfers="Yes" if qs[lab] < 0.05 else "No"))
-        print("  %-52s monazite %.3f  xenotime %.3f  zircon %.3f"
-              % (t[:52], res[LAB[0]][0], res[LAB[1]][0], res[LAB[2]][0]), flush=True)
+            out.append(
+                dict(
+                    treatment=t,
+                    mineral=lab,
+                    n_elements=len(MIN[lab]),
+                    n=n,
+                    rho=round(r, 3),
+                    perm_p=round(p, 4),
+                    q=round(float(qs[lab]), 4),
+                    transfers="Yes" if qs[lab] < 0.05 else "No",
+                )
+            )
+        print(
+            "  %-52s monazite %.3f  xenotime %.3f  zircon %.3f"
+            % (t[:52], res[LAB[0]][0], res[LAB[1]][0], res[LAB[2]][0]),
+            flush=True,
+        )
     O = pd.DataFrame(out)
     O.to_csv(os.path.join(RES, "standardisation_invariance.csv"), index=False)
     off = []
     for e in PATH:
         ratio = np.exp(li[e].values) / np.exp(la[e].values)
         ratio = ratio[np.isfinite(ratio)]
-        off.append(dict(element=e, n_pairs=len(ratio),
-                        median_india_over_australia=round(float(np.median(ratio)), 2),
-                        p25=round(float(np.percentile(ratio, 25)), 2),
-                        p75=round(float(np.percentile(ratio, 75)), 2)))
+        off.append(
+            dict(
+                element=e,
+                n_pairs=len(ratio),
+                median_india_over_australia=round(float(np.median(ratio)), 2),
+                p25=round(float(np.percentile(ratio, 25)), 2),
+                p75=round(float(np.percentile(ratio, 75)), 2),
+            )
+        )
     pd.DataFrame(off).to_csv(os.path.join(RES, "survey_element_offsets.csv"), index=False)
     pd.set_option("display.width", 250)
     print("\n==== transfer under each treatment ====")
@@ -210,6 +360,7 @@ def main():
     print("\n==== median Indian / Australian abundance over the twenty pairs ====")
     print(pd.DataFrame(off).to_string(index=False))
     print("\nwrote results/standardisation_invariance.csv and results/survey_element_offsets.csv")
+
 
 if __name__ == "__main__":
     main()
