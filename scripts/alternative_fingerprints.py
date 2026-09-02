@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 import paths
+from aravalli_wa.constants import AUS_THR_PCT
 from aravalli_wa.stats import perm_p
 
 
@@ -29,7 +30,6 @@ def spearman(x, y):
 
 def main():
     global \
-        AUS_THR, \
         CAND, \
         DR, \
         ELS, \
@@ -76,7 +76,6 @@ def main():
     RES = os.path.join(HERE, "results")
     DR = os.path.join(RES, "drainage")
     NG = paths.NGSA
-    AUS_THR = 25.0
     NPERM = 100000
     CAND = {
         "Xenotime: Dy (as published)": (["Dy"], "Xenotime-Y"),
@@ -120,7 +119,7 @@ def main():
     ids = set()
     for f in ["wa_palaeoprot_contained.csv", "yilgarn_contained.csv"]:
         d = pd.read_csv(os.path.join(DR, f))
-        ids |= set(pd.to_numeric(d[d.pct_in_domain >= AUS_THR]["id"], errors="coerce").dropna())
+        ids |= set(pd.to_numeric(d[d.pct_in_domain >= AUS_THR_PCT]["id"], errors="coerce").dropna())
     pool = ng[ng.SITEID.isin(ids)].copy()
     z = pd.DataFrame({"SITEID": pool.SITEID.values})
     for el in cidx:

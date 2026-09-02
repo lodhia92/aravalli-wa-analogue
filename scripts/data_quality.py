@@ -18,12 +18,18 @@ import os
 import pandas as pd
 
 import paths
-from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import (
+    AUS_THR_PCT,
+    IN_THR_PCT,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 
 
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR]
+    d = d[d.pct_in_domain >= IN_THR_PCT]
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     return ar[ar.k.isin(set(d.k))].copy()
 
@@ -38,19 +44,17 @@ def findcol(el):
 
 def aus(path):
     d = pd.read_csv(path)
-    d = d[d.pct_in_domain >= AUS_THR]
+    d = d[d.pct_in_domain >= AUS_THR_PCT]
     ids = set(pd.to_numeric(d["id"], errors="coerce").dropna())
     return ngn[ngn.index.isin(ids)].copy(), cens_site[cens_site.index.isin(ids)].copy()
 
 
 def main():
     global \
-        AUS_THR, \
         DR, \
         ELS, \
         H, \
         HERE, \
-        IN_THR, \
         MATCH_EL, \
         NG, \
         PATH, \
@@ -89,7 +93,6 @@ def main():
     PROJ = os.path.dirname(os.path.dirname(HERE))
     RES = os.path.join(HERE, "results")
     DR = os.path.join(RES, "drainage")
-    IN_THR, AUS_THR = 50.0, 25.0
     MATCH_EL = ["Th", "Sc", "Co", "La", "Eu", "Sm", "Gd", "Yb", "Nb", "Y"]
     PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
     ELS = MATCH_EL + PATH

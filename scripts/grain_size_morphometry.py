@@ -48,7 +48,13 @@ import pandas as pd
 
 import paths
 from aravalli_wa.composition import logr
-from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import (
+    AUS_THR_PCT,
+    IN_THR_PCT,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 from aravalli_wa.stats import avg_rank, bh, corr_rows
 
 csv.field_size_limit(10**7)
@@ -56,7 +62,6 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")
 DR = os.path.join(RES, "drainage")
-IN_THR, AUS_THR = 50.0, 25.0
 CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
 MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
 PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]
@@ -115,7 +120,7 @@ ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
 
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR]
+    d = d[d.pct_in_domain >= IN_THR_PCT]
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     m = ar[ar.k.isin(set(d.k))].copy()
     m["sid"] = name + "_" + m.k
@@ -182,7 +187,7 @@ def ngsa(gs=None, depth=None):
 
 def aus_pool(ng, path, label):
     d = pd.read_csv(path)
-    d = d[d.pct_in_domain >= AUS_THR]
+    d = d[d.pct_in_domain >= AUS_THR_PCT]
     ids = set(pd.to_numeric(d["id"], errors="coerce").dropna())
     m = ng[ng.index.isin(ids)].copy()
     m["sid"] = [f"{label}_{i}" for i in m.index]

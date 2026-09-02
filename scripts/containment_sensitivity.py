@@ -55,7 +55,13 @@ import pandas as pd
 
 import paths
 from aravalli_wa.composition import logr
-from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import (
+    AUS_THR_PCT,
+    IN_THR_PCT,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 from aravalli_wa.stats import avg_rank, bh, corr_rows
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -65,7 +71,6 @@ RES = os.path.join(HERE, "results")
 DR = os.path.join(RES, "drainage")
 DOMS, LAB, MIN = core.DOMS, core.LAB, core.MIN
 MATCH, PATH = core.MATCH, core.PATH
-PUB_IN, PUB_AU = 50.0, 25.0
 PUB_RHO = {"monazite (Ce,Nd,Pr)": 0.696, "xenotime (Dy)": 0.506}
 
 _RAW = {}
@@ -229,7 +234,7 @@ GRID = (
 
 
 def run_grid():
-    pubD = build_D(PUB_IN, PUB_AU)
+    pubD = build_D(IN_THR_PCT, AUS_THR_PCT)
     pubsel = core.select(pubD, "published")
     pubk = core.pairkeys(pubD, pubsel)
     pres, _ = transfer(pubD, pubsel)
@@ -325,7 +330,7 @@ def corr_pool(s, c):
 
 
 def run_confound():
-    D = build_D(PUB_IN, PUB_AU)
+    D = build_D(IN_THR_PCT, AUS_THR_PCT)
     sel = core.select(D, "published")
 
     # (a) does containment correlate with the fingerprint scores, over the whole eligible pool?
@@ -500,7 +505,7 @@ def run_power():
     correlation as the thresholded pool did, the collapse is sample size.
     """
     rng = np.random.default_rng(POWER_SEED)
-    Dfull = build_D(PUB_IN, PUB_AU)
+    Dfull = build_D(IN_THR_PCT, AUS_THR_PCT)
     pubsel = core.select(Dfull, "published")
     pubrho = {lab: core.spearman_perm(*core.vectors(Dfull, pubsel, lab)[:2])[0] for lab in LAB}
     pubdist = pair_distance(Dfull, pubsel)
@@ -512,7 +517,7 @@ def run_power():
 
     rows = []
     for at in (40.0, 50.0, 60.0):
-        Dt = build_D(PUB_IN, at)
+        Dt = build_D(IN_THR_PCT, at)
         selt = core.select(Dt, "published")
         sizes = {dom: len(Dt[dom]["Av"]) for dom in DOMS}
         obs = {lab: core.spearman_perm(*core.vectors(Dt, selt, lab)[:2])[0] for lab in LAB}

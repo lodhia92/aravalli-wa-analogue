@@ -23,6 +23,7 @@ import pandas as pd
 import shapefile
 
 import paths
+from aravalli_wa.constants import AUS_THR_PCT
 from aravalli_wa.geometry import shape_to_path
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +31,6 @@ PROJ = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(HERE, "results")
 DR = os.path.join(RES, "drainage")
 SHP = paths.TECTONIC
-AUS_THR = 25.0  # same threshold as analogue_pairing.py
 
 KEEP = [
     "TECTNAME",
@@ -50,10 +50,10 @@ KEEP = [
 
 def main():
     wapp = pd.read_csv(os.path.join(DR, "wa_palaeoprot_contained.csv"))
-    wapp = wapp[wapp.pct_in_domain >= AUS_THR].copy()
+    wapp = wapp[wapp.pct_in_domain >= AUS_THR_PCT].copy()
     wapp["pool"] = "WA_PP"
     yil = pd.read_csv(os.path.join(DR, "yilgarn_contained.csv"))
-    yil = yil[yil.pct_in_domain >= AUS_THR].copy()
+    yil = yil[yil.pct_in_domain >= AUS_THR_PCT].copy()
     yil["pool"] = "Y+N"
     sites = pd.concat([wapp, yil], ignore_index=True)
     sites["SITEID"] = pd.to_numeric(sites["id"], errors="coerce")

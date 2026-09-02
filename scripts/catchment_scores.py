@@ -27,12 +27,12 @@ import numpy as np
 import pandas as pd
 
 import paths
-from aravalli_wa.constants import TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import AUS_THR_PCT, IN_THR_PCT, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
 
 
 def india(name):
     d = pd.read_csv(f"{DR}/{name}_contained.csv")
-    d = d[d.pct_in_domain >= IN_THR]
+    d = d[d.pct_in_domain >= IN_THR_PCT]
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     m = ar[ar.k.isin(set(d.k))].copy()
     m["sid"] = name + "_" + m.k
@@ -51,7 +51,7 @@ def findcol(el):
 
 def aus(name, label, domain):
     d = pd.read_csv(f"{DR}/{name}_contained.csv")
-    d = d[d.pct_in_domain >= AU_THR]
+    d = d[d.pct_in_domain >= AUS_THR_PCT]
     d["id"] = pd.to_numeric(d["id"], errors="coerce")
     m = ng[ng.index.isin(set(d.id.dropna()))].copy().reset_index()
     m = m.merge(d[["id", "lat", "lon"]].drop_duplicates("id"), left_on="SITEID", right_on="id")
@@ -76,13 +76,11 @@ def score(df, mu, sd):
 
 def main():
     global \
-        AU_THR, \
         DR, \
         ELEMS, \
         FP, \
         H, \
         HERE, \
-        IN_THR, \
         NG, \
         PROJ, \
         RES, \
@@ -128,8 +126,6 @@ def main():
     PROJ = os.path.dirname(HERE)
     RES = f"{HERE}/results"
     DR = f"{RES}/drainage"
-    IN_THR = 50.0
-    AU_THR = 25.0
     ELEMS = ["Ce", "Nd", "Pr", "Dy", "Zr", "Hf", "Ti"]
     FP = {
         "monazite_LREE": ["Ce", "Nd", "Pr"],

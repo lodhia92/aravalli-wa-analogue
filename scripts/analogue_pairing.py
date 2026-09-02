@@ -37,12 +37,18 @@ import pandas as pd
 
 import paths
 from aravalli_wa.composition import ratios
-from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import (
+    AUS_THR_PCT,
+    IN_THR_PCT,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 
 
 def india(name):
     d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR]
+    d = d[d.pct_in_domain >= IN_THR_PCT]
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     m = ar[ar.k.isin(set(d.k))].copy()
     m["sid"] = name + "_" + m.k
@@ -59,7 +65,7 @@ def col(el, method):
 
 def aus(path, label):
     d = pd.read_csv(path)
-    d = d[d.pct_in_domain >= AUS_THR]
+    d = d[d.pct_in_domain >= AUS_THR_PCT]
     ids = set(pd.to_numeric(d["id"], errors="coerce").dropna())
     m = ng[ng.SITEID.isin(ids)].copy()
     m["sid"] = label + "_" + m.SITEID.astype(str)
@@ -130,7 +136,6 @@ def spearman(a, b):
 
 def main():
     global \
-        AUS_THR, \
         B, \
         Bc, \
         CI, \
@@ -138,7 +143,6 @@ def main():
         ELEM, \
         H, \
         HERE, \
-        IN_THR, \
         MATCH, \
         NG, \
         NPERM, \
@@ -196,8 +200,6 @@ def main():
     DR = os.path.join(RES, "drainage")
     NPERM = 100000
     SEED = 20260827
-    IN_THR = 50.0
-    AUS_THR = 25.0  # India >=50% (dense); Australia relaxed to >=25% (sparse, large catchments)
     CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
     MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
     PATH = ["Zr", "Hf", "Ti", "Ce", "Nd", "Pr", "Dy", "P"]

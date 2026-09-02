@@ -19,13 +19,18 @@ import pandas as pd
 
 import paths
 from aravalli_wa.composition import ratios
-from aravalli_wa.constants import P_MASS_FRACTION_OF_P2O5, TI_MASS_FRACTION_OF_TIO2, WT_PCT_TO_MG_KG
+from aravalli_wa.constants import (
+    IN_THR_PCT,
+    P_MASS_FRACTION_OF_P2O5,
+    TI_MASS_FRACTION_OF_TIO2,
+    WT_PCT_TO_MG_KG,
+)
 from aravalli_wa.stats import zscore_elem
 
 
 def india(name):
     d = pd.read_csv(f"{DR}/{name}_contained.csv")
-    d = d[d.pct_in_domain >= IN_THR]
+    d = d[d.pct_in_domain >= IN_THR_PCT]
     d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
     m = ar[ar.k.isin(set(d.k))].copy()
     m["sid"] = name + "_" + m.k
@@ -144,7 +149,6 @@ def main():
         DR, \
         H, \
         HERE, \
-        IN_THR, \
         MATCH, \
         MIN, \
         NG, \
@@ -197,7 +201,6 @@ def main():
     PROJ = os.path.dirname(HERE)
     RES = f"{HERE}/results"
     DR = f"{RES}/drainage"
-    IN_THR = 50.0
     CI = dict(La=0.237, Yb=0.170, Sm=0.148, Eu=0.0580, Gd=0.199)
     MATCH = ["Th/Sc", "La/Sc", "Th/Co", "EuEu", "La/Yb_n", "Nb/Y"]
     MIN = {

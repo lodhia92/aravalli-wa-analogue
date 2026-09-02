@@ -101,7 +101,7 @@ def mixing_table():
 
 def selected(M):
     """Align the mixing measures to the twenty selected Australian pair members."""
-    D = cont.build_D(cont.PUB_IN, cont.PUB_AU)
+    D = cont.build_D(cont.IN_THR_PCT, cont.AUS_THR_PCT)
     sel = core.select(D, "published")
     asid = []
     for dom in DOMS:

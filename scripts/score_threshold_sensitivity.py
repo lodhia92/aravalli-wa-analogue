@@ -46,6 +46,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from aravalli_wa.constants import IN_THR_PCT
+
 NDRAW = 100_000
 
 LINK_KM = 10.0
@@ -182,7 +184,6 @@ def main():
         FP, \
         FP_ALT, \
         HERE, \
-        IN_THR, \
         RES, \
         SEED, \
         bic1, \
@@ -244,7 +245,6 @@ def main():
     FP = "monazite_LREE"  # the fingerprint carried forward; see Section 3.2
     FP_ALT = "xenotime_HREE"  # shown in Figure 5b, not carried forward
     DOMAINS = ["Sandmata", "Mangalwar"]
-    IN_THR = 50.0
     rng = np.random.default_rng(SEED)
     sc = pd.read_csv(f"{RES}/catchment_scores.csv")
     ind = sc[sc.survey == "NGCM"].copy()
@@ -252,7 +252,7 @@ def main():
     cat = []
     for name, dom in [("sandmata", "Sandmata"), ("mangalwar", "Mangalwar")]:
         d = pd.read_csv(f"{DR}/{name}_contained.csv")
-        d = d[d.pct_in_domain >= IN_THR]
+        d = d[d.pct_in_domain >= IN_THR_PCT]
         d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
         g = ind[ind.domain == dom].merge(
             d[["k", "catchment_km2"]].drop_duplicates("k"), on="k", how="left"

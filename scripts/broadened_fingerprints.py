@@ -98,7 +98,7 @@ def main():
     cont.MIN = dict(core.MIN)
     cont.MIN.update(NEW)
     cont.MIN.update(DEMO)
-    D = cont.build_D(cont.PUB_IN, cont.PUB_AU)
+    D = cont.build_D(cont.IN_THR_PCT, cont.AUS_THR_PCT)
     sel = core.select(D, "published")
 
     pub, new, demo = list(core.MIN), list(NEW), list(DEMO)
