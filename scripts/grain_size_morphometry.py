@@ -50,12 +50,12 @@ import paths
 from aravalli_wa.composition import logr
 from aravalli_wa.constants import (
     AUS_THR_PCT,
-    IN_THR_PCT,
     P_MASS_FRACTION_OF_P2O5,
     TI_MASS_FRACTION_OF_TIO2,
     WT_PCT_TO_MG_KG,
 )
 from aravalli_wa.stats import avg_rank, bh, corr_rows
+from aravalli_wa.survey import indian_pool
 
 csv.field_size_limit(10**7)
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -119,12 +119,7 @@ ar["k"] = ar.LAT.round(4).astype(str) + "_" + ar.LON.round(4).astype(str)
 
 
 def india(name):
-    d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR_PCT]
-    d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
-    m = ar[ar.k.isin(set(d.k))].copy()
-    m["sid"] = name + "_" + m.k
-    return m
+    return indian_pool(ar, pd.read_csv(os.path.join(DR, f"{name}_contained.csv")), name)
 
 
 sand, mang = india("sandmata"), india("mangalwar")

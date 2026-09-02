@@ -40,13 +40,12 @@ import pandas as pd
 import paths
 from aravalli_wa.constants import (
     AL_MASS_FRACTION_OF_AL2O3,
-    AUS_THR_PCT,
-    IN_THR_PCT,
     P_MASS_FRACTION_OF_P2O5,
     TI_MASS_FRACTION_OF_TIO2,
     WT_PCT_TO_MG_KG,
 )
 from aravalli_wa.stats import zscore_elem
+from aravalli_wa.survey import australian_pool, indian_pool
 
 
 def ratios(df):
@@ -66,12 +65,7 @@ def ratios(df):
 
 
 def india(name):
-    d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR_PCT]
-    d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
-    m = ar[ar.k.isin(set(d.k))].copy()
-    m["sid"] = name + "_" + m.k
-    return m
+    return indian_pool(ar, pd.read_csv(os.path.join(DR, f"{name}_contained.csv")), name)
 
 
 def findcol(el):
@@ -82,12 +76,7 @@ def findcol(el):
 
 
 def aus(path, label):
-    d = pd.read_csv(path)
-    d = d[d.pct_in_domain >= AUS_THR_PCT]
-    ids = set(pd.to_numeric(d["id"], errors="coerce").dropna())
-    m = ng[ng.index.isin(ids)].copy()
-    m["sid"] = [f"{label}_{i}" for i in m.index]
-    return m.reset_index()
+    return australian_pool(ng, pd.read_csv(path), label)
 
 
 def logratios(df):
