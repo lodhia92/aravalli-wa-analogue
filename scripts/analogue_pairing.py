@@ -39,19 +39,15 @@ import paths
 from aravalli_wa.composition import ratios
 from aravalli_wa.constants import (
     AUS_THR_PCT,
-    IN_THR_PCT,
     P_MASS_FRACTION_OF_P2O5,
     TI_MASS_FRACTION_OF_TIO2,
     WT_PCT_TO_MG_KG,
 )
+from aravalli_wa.survey import indian_pool
 
 
 def india(name):
-    d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR_PCT]
-    d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
-    m = ar[ar.k.isin(set(d.k))].copy()
-    m["sid"] = name + "_" + m.k
+    m = indian_pool(ar, pd.read_csv(os.path.join(DR, f"{name}_contained.csv")), name)
     m["survey"] = "NGCM"
     return m
 

@@ -20,18 +20,16 @@ import pandas as pd
 import paths
 from aravalli_wa.constants import (
     AUS_THR_PCT,
-    IN_THR_PCT,
     P_MASS_FRACTION_OF_P2O5,
     TI_MASS_FRACTION_OF_TIO2,
     WT_PCT_TO_MG_KG,
 )
+from aravalli_wa.survey import indian_pool
 
 
 def india(name):
-    d = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
-    d = d[d.pct_in_domain >= IN_THR_PCT]
-    d["k"] = d.lat.round(4).astype(str) + "_" + d.lon.round(4).astype(str)
-    return ar[ar.k.isin(set(d.k))].copy()
+    contained = pd.read_csv(os.path.join(DR, f"{name}_contained.csv"))
+    return indian_pool(ar, contained, name).drop(columns="sid")
 
 
 def findcol(el):
