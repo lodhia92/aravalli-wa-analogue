@@ -12,7 +12,9 @@ Author: Bhavik Harish Lodhia, Curtin University, bhavik.lodhia@curtin.edu.au
 Every analysis behind the published tables and the reported statistics, from the drainage
 selection through to the sensitivity tests. It contains no figure code: the manuscript figures
 are published with the paper and supplied to the journal separately. It does not redistribute
-any of the source datasets. The run order below gives each step, the script that performs it
+any of the source datasets. It does carry the published tables themselves, and four small
+derived files that the pipeline reads and no script here writes; `data/README.md` lists those
+and says where each came from. The run order below gives each step, the script that performs it
 and what that script produces.
 
 ## Before you start
@@ -36,7 +38,7 @@ Stage 1, study areas and drainage
 | Script | Produces |
 |---|---|
 | `prepare_ngcm.py` | the Indian geochemistry table from the survey packages |
-| `extract_sandmata_polygon.py` | the Sandmata Complex domain polygon |
+| `extract_sandmata_polygon.py` | the Sandmata Complex domain polygon, from a source figure that is not redistributed here; the polygon it writes is supplied instead |
 | `ngcm_coverage.py` | Indian sample coverage, per state and per domain |
 | `drainage_containment.py` | for every sample, the fraction of its upstream catchment inside a domain |
 | `pair_catchments.py` | upstream catchment polygons for the analogue samples |
@@ -60,7 +62,7 @@ Stage 4, catchment geology
 
 | Script | Produces |
 |---|---|
-| `catchment_geology.py` | **Table 3**: area fraction of each catchment underlain by each mapped unit |
+| `catchment_geology.py` | **Table 3**: area fraction of each catchment underlain by each mapped unit, in `results/catchment_geology.csv` |
 | `terrane_attribution.py` | tectonic unit of every Australian sample and pair member |
 | `ree_occurrences.py` | documented rare-earth occurrences inside the analogue catchments |
 

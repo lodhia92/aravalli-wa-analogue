@@ -10,8 +10,10 @@ so the fractions are true area fractions. Australian units come from the GSWA 1:
 tectonic units layer. Grid step is chosen per catchment to give of order 30 000 interior
 points.
 
-Output: results/catchment_geology.csv  (one row per catchment per unit)
-Run:    python scripts/catchment_geology.py --start 1 --end 20
+Output: results/catchment_geology.csv  (one row per catchment per unit), which is the file
+        lithological_mixing.py reads. A partial run writes results/catchment_geology_<start>_<end>.csv
+        instead, so that the pieces of a chunked run do not overwrite one another.
+Run:    python scripts/catchment_geology.py
 
 Author: Bhavik Harish Lodhia, Curtin University
 """
@@ -44,12 +46,26 @@ KEEP = [
     "MIN_AGE_MA",
 ]
 TARGET_PTS = 30000
+# The analogue pairs, numbered 1 to 20. A run over all of them is the published run.
+FIRST_PAIR, LAST_PAIR = 1, 20
+
+
+def output_path(start, end):
+    """Where a run over this pair range writes its table.
+
+    A run over every pair — the default — writes results/catchment_geology.csv, which is the
+    file lithological_mixing.py reads. A partial run is named by its range instead, so that the
+    pieces of a chunked run do not overwrite one another; joining them is then the caller's job.
+    """
+    if (start, end) == (FIRST_PAIR, LAST_PAIR):
+        return os.path.join(RES, "catchment_geology.csv")
+    return os.path.join(RES, "catchment_geology_%02d_%02d.csv" % (start, end))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--start", type=int, default=1)
-    ap.add_argument("--end", type=int, default=20)
+    ap.add_argument("--start", type=int, default=FIRST_PAIR)
+    ap.add_argument("--end", type=int, default=LAST_PAIR)
     a = ap.parse_args()
 
     cat = json.load(open(os.path.join(RES, "pair_catchments_australia.geojson")))["features"]
@@ -139,7 +155,7 @@ def main():
             + "; ".join("%s %.0f%%" % (k[0], v * 100) for k, v in top)
         )
 
-    out = os.path.join(RES, "catchment_geology_%02d_%02d.csv" % (a.start, a.end))
+    out = output_path(a.start, a.end)
     pd.DataFrame(rows)[
         ["pair_no", "domain", "sid", "area_km2", "n_pts", "area_frac"] + KEEP
     ].to_csv(out, index=False)

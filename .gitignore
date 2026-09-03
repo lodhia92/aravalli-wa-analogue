@@ -22,8 +22,11 @@ env/
 .DS_Store
 Thumbs.db
 
-# Input data is never redistributed; see data/README.md for the sources and the expected layout.
-data/
+# Input data is never redistributed; see data/README.md for the sources and the expected
+# layout. The README itself must stay in the repository: every script's error message
+# sends the reader to it.
+data/*
+!data/README.md
 
 # Intermediate caches written beside the results. The published tables themselves are committed.
 results/_*
