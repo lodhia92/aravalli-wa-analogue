@@ -15,7 +15,7 @@ authors:
     affiliation: Curtin University
     email: bhavik.lodhia@curtin.edu.au
     # orcid: "https://orcid.org/0000-0000-0000-0000"   # add before release
-repository-code: "https://github.com/REPLACE-ME/aravalli-wa-analogue"
+repository-code: "https://github.com/lodhia92/aravalli-wa-analogue"
 keywords:
   - geochemistry
   - stream sediment
